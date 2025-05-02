@@ -195,7 +195,7 @@ Transform:
   m_GameObject: {fileID: 182002623}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.46, y: 1.18, z: 7.73}
+  m_LocalPosition: {x: 2.3, y: 1.18, z: -9.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -233,7 +233,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotateX: {fileID: -2849261271283195093, guid: 69674e85f824f46bcbf84477ff885858, type: 3}
-  rotationXSpeedInDegrees: 45
+  rotationXSpeedInDegrees: 180
+  rotateY: {fileID: -7718722833628843055, guid: 69674e85f824f46bcbf84477ff885858, type: 3}
+  rotationYSpeedInDegrees: 45
+  maxYRotationInDegrees: 75
+  minYRotationInDegrees: 15
   camera: {fileID: 330585545}
 --- !u!1 &330585543
 GameObject:
@@ -321,13 +325,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0669873, y: 0.9330127, z: -0.25000006, w: -0.24999994}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.46, y: 4.19, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 182002626}
-  m_LocalEulerAnglesHint: {x: 30, y: 210, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
