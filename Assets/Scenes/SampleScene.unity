@@ -2038,7 +2038,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visualizer: {fileID: 1186851897}
-  TEST_ONLYCharacterInitialPosition: {x: -4, y: -3}
+  TEST_ONLYCharacterInitialPosition: {x: -2, y: -5}
   TEST_ONLYCharacterPrefab: {fileID: 6360953463903924089, guid: 11c5c2a7fcd83e24a9dd98486509f899, type: 3}
 --- !u!114 &1186851896
 MonoBehaviour:
