@@ -16,9 +16,9 @@
                 },
                 {
                     "name": "RotateAlongX",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "267361bb-c5ae-4a35-8493-e57569120b3e",
-                    "expectedControlType": "Double",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
@@ -77,9 +77,9 @@
                     "isPartOfComposite": true
                 },
                 {
-                    "name": "One Modifier",
-                    "id": "de2dfd7b-3e19-4d2b-9170-d3b41c7ed7a3",
-                    "path": "OneModifier",
+                    "name": "1D Axis",
+                    "id": "be18164e-b6e5-405e-824b-c376c3fd5f81",
+                    "path": "1DAxis(whichSideWins=1)",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -88,9 +88,9 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "modifier",
-                    "id": "2ae68fe2-e353-4c8e-9c97-7314cf964852",
-                    "path": "<Mouse>/rightButton",
+                    "name": "negative",
+                    "id": "7710128e-e29f-4a23-ac51-338d8fc5e510",
+                    "path": "<Keyboard>/q",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Mouse",
@@ -99,9 +99,9 @@
                     "isPartOfComposite": true
                 },
                 {
-                    "name": "binding",
-                    "id": "ed307ace-c7cf-4dab-b2c9-ba5eeb8414fc",
-                    "path": "<Mouse>/delta/x",
+                    "name": "positive",
+                    "id": "ef065b34-15ec-404e-ab64-048c25690ba9",
+                    "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Mouse",
@@ -123,7 +123,7 @@
                 {
                     "name": "modifier",
                     "id": "a9c8eb33-de22-424e-b4fc-bc331ed4056a",
-                    "path": "<Mouse>/leftButton",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Mouse",
@@ -163,6 +163,11 @@
             "devices": [
                 {
                     "devicePath": "<Mouse>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Keyboard>",
                     "isOptional": false,
                     "isOR": false
                 }

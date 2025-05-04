@@ -4,9 +4,6 @@ using UnityEngine.InputSystem;
 public class CameraZoom : MonoBehaviour
 {
     [SerializeField]
-    private InputActionReference cameraZoom;
-
-    [SerializeField]
     private float cameraZoomRate = 5;
 
     [SerializeField]
@@ -20,7 +17,28 @@ public class CameraZoom : MonoBehaviour
     private float currentZoom;
 
     [SerializeField]
-    private new Camera camera;  
+    private new Camera camera;
+
+    private CameraControls controls;
+
+    private InputAction cameraZoom;
+
+    private void Awake()
+    {
+        controls = new CameraControls();
+    }
+
+    private void OnEnable()
+    {
+        cameraZoom = controls.Camera.CameraZoom;
+        cameraZoom.Enable();
+    }
+
+    private void OnDisable()
+    {
+        cameraZoom.Disable();
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -30,7 +48,7 @@ public class CameraZoom : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var mouseScroll = cameraZoom.action.ReadValue<float>();
+        var mouseScroll = cameraZoom.ReadValue<float>();
         currentZoom = Mathf.Clamp(currentZoom - mouseScroll * cameraZoomRate * Time.deltaTime, minZoom, maxZoom);
         camera.orthographicSize = Mathf.Lerp(camera.orthographicSize, currentZoom, zoomSmoothness * Time.deltaTime);
     }
