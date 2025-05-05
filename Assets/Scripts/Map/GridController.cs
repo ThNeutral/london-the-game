@@ -104,7 +104,7 @@ public class GridController : MonoBehaviour
 
     private void DFS(Vector3Int current, HashSet<Vector3Int> path, int stepsLeft, Character character)
     {
-        if (stepsLeft < 0 || path.Contains(current)) return;
+        if (stepsLeft == 0) return;
 
         var hasEnemy = characters.TryGetValue(current, out var neighbor) && neighbor.Allegiance != character.Allegiance;
         if (hasEnemy || !grid.TryGetValue(current, out var tileType) || tileType == TileType.Wall) return;

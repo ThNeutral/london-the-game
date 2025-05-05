@@ -37,11 +37,21 @@ public class GridGenerator : MonoBehaviour
     private Tile highlightSelectedPath;
 
     [SerializeField]
-    private TEST_ONLYCharacterData[] datas;
+    private GameObject allyPrefab;
+
+    [SerializeField]
+    private Tile ally;
+
+    [SerializeField]
+    private GameObject enemyPrefab;
+
+    [SerializeField]
+    private Tile enemy;
 
     void Start()
     {
         var grid = new Dictionary<Vector3Int, TileType>();
+        var characters = new Dictionary<Vector3Int, GameObject>();
 
         var bounds = source.cellBounds;
 
@@ -61,6 +71,16 @@ public class GridGenerator : MonoBehaviour
                     {
                         grid[pos] = TileType.Wall;
                     }
+                    else if (tile.name == ally.name)
+                    {
+                        characters[pos] = allyPrefab;
+                        grid[pos] = TileType.Floor;
+                    }
+                    else if (tile.name == enemy.name)
+                    {
+                        characters[pos] = enemyPrefab;
+                        grid[pos] = TileType.Floor;
+                    }
                     else
                     {
                         Debug.LogError($"Unknown texture name {tile.name}");
@@ -79,13 +99,13 @@ public class GridGenerator : MonoBehaviour
 
         gridController.Grid = grid;
 
-        foreach (var data in datas)
+        foreach (var character in characters)
         {
-            var pos = visualizer.GridIndexToWorldCentered((Vector3Int)data.position); pos.y = 0.5f;
-            var character = Instantiate(data.prefab, pos, Quaternion.identity).GetComponent<Character>();
-            gridController.Charaters.Add((Vector3Int)data.position, character);
+            var pos = visualizer.GridIndexToWorldCentered(character.Key); pos.y = 0.5f;
+            var behaviour = Instantiate(character.Value, pos, Quaternion.identity).GetComponent<Character>();
+            gridController.Charaters.Add(character.Key, behaviour);
             
-            turnController.Turns[character.Allegiance][character] = true;
+            turnController.Turns[behaviour.Allegiance][behaviour] = true;
 
         }
 
