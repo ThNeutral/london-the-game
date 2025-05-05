@@ -1,20 +1,24 @@
 from PIL import Image, ImageDraw
+import itertools
 
 tile_size = 100
-colors = [(0, 255, 0),   # Green
-          (255, 0, 0),   # Red
-          (0, 0, 255)]   # Blue
 
-width = tile_size * len(colors)
-height = tile_size
+basic_values = [0, 255]
+colors = list(itertools.product(basic_values, repeat=3))
+
+colors.append((127, 127, 127))
+
+cols = rows = 3
+width = tile_size * cols
+height = tile_size * rows
 
 image = Image.new("RGB", (width, height), (255, 255, 255))
 draw = ImageDraw.Draw(image)
 
-for i, color in enumerate(colors):
-    top_left = (i * tile_size, 0)
-    bottom_right = ((i + 1) * tile_size, tile_size)
-    draw.rectangle([top_left, bottom_right], fill=color)
+for index, color in enumerate(colors):
+    x = (index % cols) * tile_size
+    y = (index // cols) * tile_size
+    draw.rectangle([ (x, y), (x + tile_size, y + tile_size) ], fill=color)
 
-image.save("../Designs/Generated/colored_tiles.png")
-print("Image saved as 'colored_tiles.png'")
+image.save("../Designs/Generated/colored_tiles_3x3.png")
+print("Image saved as 'colored_tiles_3x3.png'")

@@ -99,6 +99,15 @@ public partial class @GridControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Hover"",
+                    ""type"": ""Value"",
+                    ""id"": ""b8e96456-d873-429d-ae9d-8b0cf3bd8d67"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -134,6 +143,17 @@ public partial class @GridControls: IInputActionCollection2, IDisposable
                     ""action"": ""Click"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""53928691-23ae-4f6a-ae29-898e364cf740"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";GridMouse"",
+                    ""action"": ""Hover"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -155,6 +175,7 @@ public partial class @GridControls: IInputActionCollection2, IDisposable
         // Grid
         m_Grid = asset.FindActionMap("Grid", throwIfNotFound: true);
         m_Grid_Click = m_Grid.FindAction("Click", throwIfNotFound: true);
+        m_Grid_Hover = m_Grid.FindAction("Hover", throwIfNotFound: true);
     }
 
     ~@GridControls()
@@ -236,6 +257,7 @@ public partial class @GridControls: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Grid;
     private List<IGridActions> m_GridActionsCallbackInterfaces = new List<IGridActions>();
     private readonly InputAction m_Grid_Click;
+    private readonly InputAction m_Grid_Hover;
     /// <summary>
     /// Provides access to input actions defined in input action map "Grid".
     /// </summary>
@@ -251,6 +273,10 @@ public partial class @GridControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Grid/Click".
         /// </summary>
         public InputAction @Click => m_Wrapper.m_Grid_Click;
+        /// <summary>
+        /// Provides access to the underlying input action "Grid/Hover".
+        /// </summary>
+        public InputAction @Hover => m_Wrapper.m_Grid_Hover;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -280,6 +306,9 @@ public partial class @GridControls: IInputActionCollection2, IDisposable
             @Click.started += instance.OnClick;
             @Click.performed += instance.OnClick;
             @Click.canceled += instance.OnClick;
+            @Hover.started += instance.OnHover;
+            @Hover.performed += instance.OnHover;
+            @Hover.canceled += instance.OnHover;
         }
 
         /// <summary>
@@ -294,6 +323,9 @@ public partial class @GridControls: IInputActionCollection2, IDisposable
             @Click.started -= instance.OnClick;
             @Click.performed -= instance.OnClick;
             @Click.canceled -= instance.OnClick;
+            @Hover.started -= instance.OnHover;
+            @Hover.performed -= instance.OnHover;
+            @Hover.canceled -= instance.OnHover;
         }
 
         /// <summary>
@@ -354,5 +386,12 @@ public partial class @GridControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnClick(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Hover" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnHover(InputAction.CallbackContext context);
     }
 }

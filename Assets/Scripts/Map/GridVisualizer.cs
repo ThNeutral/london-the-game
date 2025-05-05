@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -7,7 +8,8 @@ public class GridVisualizer : MonoBehaviour
 {
     public static string WALL_TILE = "wall";
     public static string FLOOR_TILE = "floor";
-    public static string HIGHLIGHT_TILE = "highlight";
+    public static string HIGHLIGHT_ALL_PATHS_TILE = "highlight_all_paths";
+    public static string HIGHLIGHT_SELECTED_PATH_TILE = "highlight_selected_path";
 
     [SerializeField]
     private Tilemap tilemap;
@@ -75,21 +77,19 @@ public class GridVisualizer : MonoBehaviour
         return cellPosition + (cellSize / 2f);
     }
 
-    public void HighlightTile(Vector3Int tile, bool clear = true)
+    public void HighlightTiles(Vector3Int[] tiles, string type, bool clear = true)
     {
         if (clear) effects.ClearAllTiles();
 
-        var highlight = tiles[HIGHLIGHT_TILE];
-        effects.SetTile(tile, highlight);
-    }
-
-    public void HighlightTiles(Vector3Int[] tiles, bool clear = true)
-    {
-        if (clear) effects.ClearAllTiles();
-
-        var highlight = this.tiles[HIGHLIGHT_TILE];
-        var highlights = tiles.Select(_ => highlight).ToArray();
-        effects.SetTiles(tiles, highlights);
+        if (this.tiles.TryGetValue(type, out var value)) {
+            var highlight = this.tiles[type];
+            var highlights = tiles.Select(_ => highlight).ToArray();
+            effects.SetTiles(tiles, highlights);
+        }
+        else
+        {
+            Debug.LogError($"Invalid tile type: '{type}'");
+        }
     }
 
     public void ClearEffects()

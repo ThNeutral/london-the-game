@@ -3,6 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+[Serializable]
+public class TEST_ONLYCharacterData
+{
+    public GameObject prefab;
+    public Vector2Int position;
+}
+
 public class GridGenerator : MonoBehaviour
 {
     [SerializeField]
@@ -10,6 +17,9 @@ public class GridGenerator : MonoBehaviour
 
     [SerializeField]
     private GridVisualizer visualizer;
+
+    [SerializeField]
+    private TurnController turnController;
 
     [SerializeField]
     private Tilemap source;
@@ -21,7 +31,13 @@ public class GridGenerator : MonoBehaviour
     private Tile floor;
 
     [SerializeField]
-    private Tile highlight;
+    private Tile highlightAllPaths;
+
+    [SerializeField]
+    private Tile highlightSelectedPath;
+
+    [SerializeField]
+    private TEST_ONLYCharacterData[] datas;
 
     void Start()
     {
@@ -53,15 +69,25 @@ public class GridGenerator : MonoBehaviour
             }
         }
 
-        var tiles = new Dictionary<string, Tile> 
+        visualizer.Tiles = new Dictionary<string, Tile> 
         {
             { GridVisualizer.FLOOR_TILE, GetTransparentTile(floor, 0.3f) },
             { GridVisualizer.WALL_TILE, GetTransparentTile(wall, 0.3f) },
-            { GridVisualizer.HIGHLIGHT_TILE, GetTransparentTile(highlight, 0.3f) },
+            { GridVisualizer.HIGHLIGHT_ALL_PATHS_TILE, GetTransparentTile(highlightAllPaths, 0.3f) },
+            { GridVisualizer.HIGHLIGHT_SELECTED_PATH_TILE, GetTransparentTile(highlightSelectedPath, 0.3f) },
         };
-        visualizer.Tiles = tiles;
 
         gridController.Grid = grid;
+
+        foreach (var data in datas)
+        {
+            var pos = visualizer.GridIndexToWorldCentered((Vector3Int)data.position); pos.y = 0.5f;
+            var character = Instantiate(data.prefab, pos, Quaternion.identity).GetComponent<Character>();
+            gridController.Charaters.Add((Vector3Int)data.position, character);
+            
+            turnController.Turns[character.Allegiance][character] = true;
+
+        }
 
         source.gameObject.SetActive(false);
     }

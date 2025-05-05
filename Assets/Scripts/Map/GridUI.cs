@@ -14,6 +14,22 @@ public class GridUI : MonoBehaviour
 
     private GridControls controls;
     private InputAction click;
+    private InputAction hover;
+
+    public bool EnableGridUI { set => EnableGridUIInternal(value); }
+
+    private void EnableGridUIInternal(bool value) {
+        if (value)
+        {
+            click.Enable();
+            hover.Enable();
+        }
+        else
+        {
+            click.Disable();
+            hover.Disable();
+        }
+    }
 
     private void Awake()
     {
@@ -23,27 +39,51 @@ public class GridUI : MonoBehaviour
     private void OnEnable()
     {
         click = controls.Grid.Click;
-        click.Enable();
+        hover = controls.Grid.Hover;
+
+        EnableGridUI = true;
+
         click.performed += HandleClick;
+        hover.performed += HandleHover;
     }
 
     private void OnDisable()
     {
         click.performed -= HandleClick;
-        click.Disable();
+        hover.performed -= HandleHover;
+        
+        EnableGridUI = false;
+    }
+
+    private void HandleHover(InputAction.CallbackContext context)
+    {
+        if (ScreenRaycastToGridIndex(context.ReadValue<Vector2>(), out var tile)) 
+        {
+            gridController.HandleTileHover(tile);
+        }
     }
 
     private void HandleClick(InputAction.CallbackContext context)
     {
-        var mousePosition = context.ReadValue<Vector2>();
-        if (mousePosition != Vector2.zero)
+        if (ScreenRaycastToGridIndex(context.ReadValue<Vector2>(), out var tile)) 
         {
-            var ray = camera.ScreenPointToRay(mousePosition);
+            gridController.HandleTileClick(tile);
+        }
+    }
+
+    private bool ScreenRaycastToGridIndex(Vector2 from, out Vector3Int tile)
+    {
+        if (from != Vector2.zero)
+        {
+            var ray = camera.ScreenPointToRay(from);
             if (Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, tilemapLayerMask))
             {
-                var tilePos = gridController.WorldToGridIndex(hit.point);
-                gridController.HandleTileClick(tilePos);
+                tile = gridController.WorldToGridIndex(hit.point);
+                return true;
             }
         }
+
+        tile = Vector3Int.zero;
+        return false;
     }
 }

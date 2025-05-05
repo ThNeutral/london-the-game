@@ -13,6 +13,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "Hover",
+                    "type": "Value",
+                    "id": "b8e96456-d873-429d-ae9d-8b0cf3bd8d67",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -48,6 +57,17 @@
                     "action": "Click",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "53928691-23ae-4f6a-ae29-898e364cf740",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";GridMouse",
+                    "action": "Hover",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }
