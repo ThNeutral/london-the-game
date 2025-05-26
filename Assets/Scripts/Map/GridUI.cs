@@ -1,8 +1,17 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class GridUI : MonoBehaviour
 {
+    private enum SelectionState
+    {
+        NONE,
+        ABILITY,
+        POSITION,
+        ATTACK,
+    }
+
     [SerializeField] 
     private new Camera camera;
 
@@ -15,6 +24,16 @@ public class GridUI : MonoBehaviour
     private GridControls controls;
     private InputAction click;
     private InputAction hover;
+
+    [SerializeField]
+    private AbilityUI abilityUI;
+
+    [SerializeField]
+    private TurnController turnController;
+
+    private SelectionState state;
+
+    private Ability selectedAbility;
 
     public bool EnableGridUI { set => EnableGridUIInternal(value); }
 
@@ -57,18 +76,80 @@ public class GridUI : MonoBehaviour
 
     private void HandleHover(InputAction.CallbackContext context)
     {
+        if (state != SelectionState.POSITION && state != SelectionState.ATTACK) return;
+
         if (ScreenRaycastToGridIndex(context.ReadValue<Vector2>(), out var tile)) 
         {
-            gridController.HandleTileHover(tile);
+            switch (state)
+            {
+                case SelectionState.POSITION:
+                    {
+                        gridController.UpdateMovementEndTile(tile);
+                        break;
+                    }
+                case SelectionState.ATTACK:
+                    {
+                        gridController.UpdateAttackEndTile(tile);
+                        break;
+                    }
+            }
         }
     }
 
     private void HandleClick(InputAction.CallbackContext context)
     {
-        if (ScreenRaycastToGridIndex(context.ReadValue<Vector2>(), out var tile)) 
+        if (ScreenRaycastToGridIndex(context.ReadValue<Vector2>(), out var tile))
         {
-            gridController.HandleTileClick(tile);
+            switch (state)
+            {
+                case SelectionState.NONE:
+                    {
+                        if (!gridController.GetCharacter(tile, out var character)) return;
+                        if (!turnController.IsAllowedToMove(character)) return;
+                        gridController.SelectInitialTile(tile);
+                        abilityUI.PresentAbilityChoice(character, AbilityUICallback);
+                        state = SelectionState.ABILITY;
+                        break;
+                    }
+                case SelectionState.ABILITY:
+                    {
+                        break;
+                    }
+                case SelectionState.POSITION:
+                    {
+                        if (gridController.CommitMovement(selectedAbility))
+                        {
+                            if (selectedAbility.Type == AbilityType.MOVE)
+                            {
+                                state = SelectionState.NONE;
+                                abilityUI.HideAbilityChoice();
+                                selectedAbility = null;
+                            }
+                            else
+                            {
+                                state = SelectionState.ATTACK;
+                            }
+                        }
+                        break;
+                    }
+                case SelectionState.ATTACK:
+                    {
+                        gridController.CommitAction(selectedAbility);
+                        state  = SelectionState.NONE;
+                        abilityUI.HideAbilityChoice();
+                        selectedAbility = null;
+                        break;
+                    }
+            }
         }
+    }
+
+    private void AbilityUICallback(Ability ability) 
+    {
+        if (selectedAbility != null) gridController.RollbackMovement();
+        state = SelectionState.POSITION;
+        gridController.ShowAbilityTiles(ability);
+        selectedAbility = ability;
     }
 
     private bool ScreenRaycastToGridIndex(Vector2 from, out Vector3Int tile)

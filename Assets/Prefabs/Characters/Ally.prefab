@@ -125,7 +125,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameCharacterStats:
     MovementDistance: 7
+    HealthPoints: 100
   visualCharacterStats:
     MovementSpeed: 4
     MovementEpsilon: 0.05
+  abilities:
+  - MoveDistance: -1
+    AbilityDistance: 1
+    HitPointChange: 30
+    Type: 1
+  - MoveDistance: 2
+    AbilityDistance: 3
+    HitPointChange: 10
+    Type: 1
   allegiance: 0

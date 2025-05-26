@@ -4,21 +4,25 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+public enum VisualizerTileType
+{
+    Wall,
+    Floor,
+    AllPath,
+    SelectedPath,
+    Attack,
+}
+
 public class GridVisualizer : MonoBehaviour
 {
-    public static string WALL_TILE = "wall";
-    public static string FLOOR_TILE = "floor";
-    public static string HIGHLIGHT_ALL_PATHS_TILE = "highlight_all_paths";
-    public static string HIGHLIGHT_SELECTED_PATH_TILE = "highlight_selected_path";
-
     [SerializeField]
     private Tilemap tilemap;
 
     [SerializeField]
     private Tilemap effects;
 
-    private Dictionary<string, Tile> tiles;
-    public Dictionary<string, Tile> Tiles { set { tiles = value; } }
+    private Dictionary<VisualizerTileType, Tile> tiles;
+    public Dictionary<VisualizerTileType, Tile> Tiles { set { tiles = value; } }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -40,11 +44,11 @@ public class GridVisualizer : MonoBehaviour
             Tile tile = null;
             if (kvp.Value == TileType.Floor)
             {
-                tile = this.tiles[FLOOR_TILE];
+                tile = this.tiles[VisualizerTileType.Floor];
             }
             else if (kvp.Value == TileType.Wall)
             {
-                tile = this.tiles[WALL_TILE];
+                tile = this.tiles[VisualizerTileType.Wall];
             }
             else
             {
@@ -77,10 +81,13 @@ public class GridVisualizer : MonoBehaviour
         return cellPosition + (cellSize / 2f);
     }
 
-    public void HighlightTiles(Vector3Int[] tiles, string type, bool clear = true)
+    public void ClearHighlightsTilemap()
     {
-        if (clear) effects.ClearAllTiles();
+        effects.ClearAllTiles();
+    }
 
+    public void HighlightTiles(Vector3Int[] tiles, VisualizerTileType type)
+    {
         if (this.tiles.TryGetValue(type, out var value)) {
             var highlight = this.tiles[type];
             var highlights = tiles.Select(_ => highlight).ToArray();

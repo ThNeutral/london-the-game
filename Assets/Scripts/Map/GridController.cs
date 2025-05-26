@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Playables;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 using UnityEngine.Tilemaps;
 using UnityEngine.WSA;
 
@@ -21,10 +24,17 @@ public class GridController : MonoBehaviour
     private Dictionary<Vector3Int, Character> characters = new();
     public Dictionary<Vector3Int, Character> Charaters { get => characters; }
 
-    private Vector3Int start = new(int.MaxValue, int.MaxValue, int.MaxValue);
-    private Vector3Int end = new(int.MaxValue, int.MaxValue, int.MaxValue);
+    private Vector3Int startMovement = new(int.MaxValue, int.MaxValue, int.MaxValue);
+    private Vector3Int endMovement = new(int.MaxValue, int.MaxValue, int.MaxValue);
     private HashSet<Vector3Int> allPossiblePathTiles;
     private List<Vector3Int> selectedPath;
+
+    private Vector3Int startAttack = new(int.MaxValue, int.MaxValue, int.MaxValue);
+    private Vector3Int endAttack = new(int.MaxValue, int.MaxValue, int.MaxValue);
+    private HashSet<Vector3Int> allPossibleAttackTiles;
+    private List<Vector3Int> selectedAttack;
+
+    private Vector3Int EmptyTile { get => new(int.MaxValue, int.MaxValue, int.MaxValue); }
 
     private void Start()
     {
@@ -35,27 +45,40 @@ public class GridController : MonoBehaviour
         return visualizer.WorldToGridIndex(screen);
     }
 
-    public void HandleTileHover(Vector3Int tile)
+    public void UpdateMovementEndTile(Vector3Int tile)
     {
-        if (tile != end && 
+        if (tile != endMovement && 
             allPossiblePathTiles != null && 
             allPossiblePathTiles.Contains(tile) &&
-            !characters.ContainsKey(tile)
+            (tile == startMovement || !characters.ContainsKey(tile))
         ) {
-            end = tile;
-            selectedPath = FindPath(start, end);
-            visualizer.HighlightTiles(allPossiblePathTiles.ToArray(), GridVisualizer.HIGHLIGHT_ALL_PATHS_TILE);
-            visualizer.HighlightTiles(selectedPath.ToArray(), GridVisualizer.HIGHLIGHT_SELECTED_PATH_TILE, false);
+            endMovement = tile;
+            selectedPath = FindPath(startMovement, endMovement);
+
+            visualizer.ClearEffects();
+            visualizer.HighlightTiles(allPossiblePathTiles.ToArray(), VisualizerTileType.AllPath);
+            visualizer.HighlightTiles(selectedPath.ToArray(), VisualizerTileType.SelectedPath);
+            visualizer.HighlightTiles(allPossibleAttackTiles.ToArray(), VisualizerTileType.Attack);
         }
     }
 
-    public void HandleTileClick(Vector3Int tile)
+    public void UpdateAttackEndTile(Vector3Int tile)
     {
-        if (allPossiblePathTiles == null) HandleNullPath(tile);
-        else HandleSelectedPath();
+        if (tile != endAttack &&
+            allPossibleAttackTiles != null &&
+            allPossibleAttackTiles.Contains(tile)
+        )
+        {
+            endAttack = tile;
+            selectedAttack = FindPath(startAttack, endAttack, true);
+
+            visualizer.ClearEffects();
+            visualizer.HighlightTiles(allPossibleAttackTiles.ToArray(), VisualizerTileType.Attack);
+            visualizer.HighlightTiles(selectedAttack.ToArray(), VisualizerTileType.SelectedPath);
+        }
     }
 
-    private void HandleNullPath(Vector3Int tile) 
+    public void SelectInitialTile(Vector3Int tile) 
     {
         if (!characters.TryGetValue(tile, out var character)) return;
         if (!turnController.IsAllowedToMove(character)) return;
@@ -63,51 +86,144 @@ public class GridController : MonoBehaviour
         if (grid.TryGetValue(tile, out var type))
         {
             if (type == TileType.Wall) return;
-            allPossiblePathTiles = FindAllPossiblePaths(tile, character.Stats.MovementDistance);
-            visualizer.HighlightTiles(allPossiblePathTiles.ToArray(), GridVisualizer.HIGHLIGHT_ALL_PATHS_TILE);
-            start = tile;
+            visualizer.HighlightTiles(new Vector3Int[] { tile }, VisualizerTileType.SelectedPath);
+            startMovement = tile;
         }
     }
 
-    private void HandleSelectedPath() 
+    public void ShowAbilityTiles(Ability ability)
     {
-        if (selectedPath != null && start != end)
+        var character = characters[startMovement];
+        if (!character.Abilities.Contains(ability))
         {
-            var character = characters[start];
-            characters.Remove(start);
-            characters[end] = character;
-            character.Path = visualizer.GridIndexesToWorldCentered(selectedPath);
-            selectedPath = null;
-
-            turnController.Move(character);
-
-            gridUI.EnableGridUI = false;
-            character.OnEndOfMovement = () => gridUI.EnableGridUI = true;
+            Debug.LogError("Selected ability is not present in characters ability list");
         }
 
-        start = new(int.MaxValue, int.MaxValue, int.MaxValue);
-        end = new(int.MaxValue, int.MaxValue, int.MaxValue);
+        var movementDistance = character.Stats.MovementDistance;
+        if (ability.Type != AbilityType.MOVE && ability.MoveDistance >= 0)
+        {
+            movementDistance = ability.MoveDistance;
+        }
+
+        var abilityDistance = ability.AbilityDistance;
+        if (abilityDistance < 0)
+        {
+            abilityDistance = 0;
+        }
+
+        allPossiblePathTiles = FindAllPossiblePaths(startMovement, movementDistance);
+        allPossibleAttackTiles = new HashSet<Vector3Int>(FindAllPossiblePaths(startMovement, movementDistance + abilityDistance).Except(allPossiblePathTiles));
+
         visualizer.ClearEffects();
-        allPossiblePathTiles = null;
+        visualizer.HighlightTiles(allPossiblePathTiles.ToArray(), VisualizerTileType.AllPath);
+        visualizer.HighlightTiles(new Vector3Int[] { startMovement }, VisualizerTileType.SelectedPath);
+        visualizer.HighlightTiles(allPossibleAttackTiles.ToArray(), VisualizerTileType.Attack);
     }
 
-    private HashSet<Vector3Int> FindAllPossiblePaths(Vector3Int start, int length)
+    public bool GetCharacter(Vector3Int tile, out Character character)
+    {
+        return characters.TryGetValue(tile, out character);
+    }
+
+    public bool RollbackMovement()
+    {
+        var exists = characters.TryGetValue(endMovement, out var character);
+        if (!exists) return false;
+
+        var copy = new List<Vector3Int>(selectedPath);
+        copy.Reverse();
+
+        characters.Remove(endMovement);
+        characters[startMovement] = character;
+
+        character.Path = visualizer.GridIndexesToWorldCentered(copy);
+
+        visualizer.ClearEffects();
+
+        return true;
+    }
+
+    public bool CommitMovement(Ability ability)
+    {
+        if (selectedPath != null)
+        {
+            var character = characters[startMovement];
+            if (!character.Abilities.Contains(ability))
+            {
+                Debug.LogError("Selected ability is not present in characters ability list");
+            }
+
+            characters.Remove(startMovement);
+            characters[endMovement] = character;
+
+            character.Path = visualizer.GridIndexesToWorldCentered(selectedPath);
+
+            if (ability.Type == AbilityType.MOVE)
+            {
+                visualizer.ClearEffects();
+                turnController.Move(character);
+                return true;
+            }
+
+            startAttack = endMovement;
+
+            var abilityDistance = ability.AbilityDistance;
+            if (abilityDistance < 0)
+            {
+                abilityDistance = 0;
+            }
+
+            allPossibleAttackTiles = FindAllPossiblePaths(startAttack, abilityDistance, true);
+
+            visualizer.ClearEffects();
+            visualizer.HighlightTiles(allPossibleAttackTiles.ToArray(), VisualizerTileType.Attack);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public void CommitAction(Ability ability)
+    {
+        var character = characters[endMovement];
+        if (!character.Abilities.Contains(ability))
+        {
+            Debug.LogError("Selected ability is not present in characters ability list");
+        }
+
+        if (characters.TryGetValue(endAttack, out var targetCharacter))
+        {
+            targetCharacter.InteractWithAbility(AbilityMessage.Generate(ability, character));
+        }
+
+        startMovement = EmptyTile;
+        endMovement = EmptyTile;
+
+        allPossiblePathTiles = null;
+        allPossibleAttackTiles = null;
+
+        turnController.Move(character);
+        visualizer.ClearEffects();
+    }
+
+    private HashSet<Vector3Int> FindAllPossiblePaths(Vector3Int start, int length, bool ignoreEnemy = false)
     {
         var path = new HashSet<Vector3Int>();
         if (grid.TryGetValue(start, out var type) && type == TileType.Wall) return path;
 
         characters.TryGetValue(start, out var character);
-        DFS(start, path, length, character);
+        DFS(start, path, length + 1, character, ignoreEnemy);
 
         return path;
     }
 
-    private void DFS(Vector3Int current, HashSet<Vector3Int> path, int stepsLeft, Character character)
+    private void DFS(Vector3Int current, HashSet<Vector3Int> path, int stepsLeft, Character character, bool ignoreEnemy)
     {
         if (stepsLeft == 0) return;
 
         var hasEnemy = characters.TryGetValue(current, out var neighbor) && neighbor.Allegiance != character.Allegiance;
-        if (hasEnemy || !grid.TryGetValue(current, out var tileType) || tileType == TileType.Wall) return;
+        if ((hasEnemy && !ignoreEnemy) || !grid.TryGetValue(current, out var tileType) || tileType == TileType.Wall) return;
 
         path.Add(current);
 
@@ -121,11 +237,11 @@ public class GridController : MonoBehaviour
 
         foreach (var dir in directions)
         {
-            DFS(current + dir, path, stepsLeft - 1, character);
+            DFS(current + dir, path, stepsLeft - 1, character, ignoreEnemy);
         }
     }
 
-    private List<Vector3Int> FindPath(Vector3Int start, Vector3Int goal)
+    private List<Vector3Int> FindPath(Vector3Int start, Vector3Int goal, bool ignoreEnemy = false)
     {
         var cameFrom = new Dictionary<Vector3Int, Vector3Int>();
         var visited = new HashSet<Vector3Int>();
@@ -169,7 +285,7 @@ public class GridController : MonoBehaviour
 
                 var walkable = grid.TryGetValue(neighbor, out var type) && type != TileType.Wall;
                 var containsEnemy = characters.TryGetValue(neighbor, out var neighborCharacter) && neighborCharacter.Allegiance != character.Allegiance;
-                if (walkable && !containsEnemy)
+                if (walkable && (!containsEnemy || ignoreEnemy))
                 {
                     visited.Add(neighbor);
                     cameFrom[neighbor] = current;
