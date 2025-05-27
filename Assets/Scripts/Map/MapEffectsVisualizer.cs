@@ -24,4 +24,15 @@ public class MapEffectVisualizer : MonoBehaviour
     {
         return tilemap.WorldToCell(world);
     }
+
+    public void ResetTiles()
+    {
+        foreach (Vector3Int pos in tilemap.cellBounds.allPositionsWithin)
+        {
+            if (tilemap.HasTile(pos))
+            {
+                tilemap.SetTile(pos, idleTile);
+            }
+        }
+    }
 }

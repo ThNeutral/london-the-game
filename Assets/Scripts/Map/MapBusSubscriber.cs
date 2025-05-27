@@ -7,6 +7,8 @@ public class MapBusSubscriber : MonoBehaviour
     [SerializeField]
     private MapEffectVisualizer visualizer;
 
+    private Vector3Int currentSelectedTile;
+
     void Start()
     {
         bus = MessageBus.Instance;
@@ -16,7 +18,8 @@ public class MapBusSubscriber : MonoBehaviour
     void HandleCameraRaycastHitTilemapIdle(MessageBus.Event @event)
     {
         var hit = (RaycastHit)@event.payload;
-        var cell = visualizer.WorldToCell(hit.point);
-        visualizer.HighlightTiles(new Vector3Int[] { cell });
+        currentSelectedTile = visualizer.WorldToCell(hit.point);
+        visualizer.ResetTiles();
+        visualizer.HighlightTiles(new Vector3Int[] { currentSelectedTile });
     }
 }

@@ -7,7 +7,14 @@ public class CameraRotation : MonoBehaviour
     [SerializeField]
     private float rotationXStepInDegrees = 90;
 
-    private float currentXRotation;
+    private float targetXRotation;
+
+    private Vector3 target;
+    public Vector3 Target { set => SetTarget(value); }
+    private void SetTarget(Vector3 value) {
+        target = value;
+        transform.position = value;
+    }
 
     [SerializeField]
     private float rotationXSmoothness = 5;
@@ -16,10 +23,10 @@ public class CameraRotation : MonoBehaviour
     private float rotationYSpeedInDegrees = 45;
 
     [SerializeField]
-    private float maxYRotationInDegrees = 75;
+    private float maxYRotationInDegrees = 60;
 
     [SerializeField]
-    private float minYRotationInDegrees = 15;
+    private float minYRotationInDegrees = 60;
 
     private float currentYRotation;
 
@@ -57,7 +64,7 @@ public class CameraRotation : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        currentXRotation = camera.transform.eulerAngles.y;
+        targetXRotation = camera.transform.eulerAngles.y;
         currentYRotation = Math.Clamp(
             camera.transform.eulerAngles.x,
             minYRotationInDegrees,
@@ -72,15 +79,16 @@ public class CameraRotation : MonoBehaviour
         var newYRotation = currentYRotation + rotateYValue * rotationYSpeedInDegrees * Time.deltaTime;
         currentYRotation = Math.Clamp(newYRotation, minYRotationInDegrees, maxYRotationInDegrees);
 
-        var currentY = camera.transform.rotation.eulerAngles.y;
-        var delta = Mathf.DeltaAngle(currentY, currentXRotation);
+        var currentY = transform.rotation.eulerAngles.y;
+        var delta = Mathf.DeltaAngle(currentY, targetXRotation);
         var xRotation = currentY + delta * rotationXSmoothness * Time.deltaTime;
-        camera.transform.rotation = Quaternion.Euler(currentYRotation, xRotation, 0);
+
+        transform.rotation = Quaternion.Euler(currentYRotation, xRotation, 0);
     }
 
     private void OnRotateX(InputAction.CallbackContext context)
     {
         var rotateXValue = context.ReadValue<float>();
-        currentXRotation += rotateXValue * rotationXStepInDegrees;
+        targetXRotation += rotateXValue * rotationXStepInDegrees;
     }
 }
