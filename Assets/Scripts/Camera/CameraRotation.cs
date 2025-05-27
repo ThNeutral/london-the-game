@@ -5,10 +5,13 @@ using UnityEngine.InputSystem;
 public class CameraRotation : MonoBehaviour
 {
     [SerializeField]
-    private float rotationXSpeedInDegrees = 180;
+    private float rotationXStepInDegrees = 90;
 
-    private float currentXRotation ;
-    
+    private float currentXRotation;
+
+    [SerializeField]
+    private float rotationXSmoothness = 5;
+
     [SerializeField]
     private float rotationYSpeedInDegrees = 45;
 
@@ -37,6 +40,7 @@ public class CameraRotation : MonoBehaviour
     {
         rotateX = controls.Camera.RotateAlongX;
         rotateX.Enable();
+        rotateX.performed += OnRotateX;
 
         rotateY = controls.Camera.RotateAlongY;
         rotateY.Enable();
@@ -44,7 +48,9 @@ public class CameraRotation : MonoBehaviour
 
     private void OnDisable()
     {
+        rotateX.performed -= OnRotateX;
         rotateX.Disable();
+
         rotateY.Disable();
     }
 
@@ -62,13 +68,19 @@ public class CameraRotation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var rotateXValue = rotateX.ReadValue<float>();
-        currentXRotation += rotateXValue * rotationXSpeedInDegrees * Time.deltaTime;
-
         var rotateYValue = rotateY.ReadValue<float>();
         var newYRotation = currentYRotation + rotateYValue * rotationYSpeedInDegrees * Time.deltaTime;
         currentYRotation = Math.Clamp(newYRotation, minYRotationInDegrees, maxYRotationInDegrees);
 
-        camera.transform.rotation = Quaternion.Euler(currentYRotation, currentXRotation, 0);
+        var currentY = camera.transform.rotation.eulerAngles.y;
+        var delta = Mathf.DeltaAngle(currentY, currentXRotation);
+        var xRotation = currentY + delta * rotationXSmoothness * Time.deltaTime;
+        camera.transform.rotation = Quaternion.Euler(currentYRotation, xRotation, 0);
+    }
+
+    private void OnRotateX(InputAction.CallbackContext context)
+    {
+        var rotateXValue = context.ReadValue<float>();
+        currentXRotation += rotateXValue * rotationXStepInDegrees;
     }
 }

@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 6282569986779570917}
   - component: {fileID: 3078554129822909552}
   - component: {fileID: 5183223793897357638}
-  - component: {fileID: 8651658997619711063}
   m_Layer: 0
   m_Name: Ally
   m_TagString: Untagged
@@ -111,31 +110,3 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &8651658997619711063
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6360953463903924089}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6125a928fe3c6134bad68d8b8945b280, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gameCharacterStats:
-    MovementDistance: 7
-    HealthPoints: 100
-  visualCharacterStats:
-    MovementSpeed: 4
-    MovementEpsilon: 0.05
-  abilities:
-  - MoveDistance: -1
-    AbilityDistance: 1
-    HitPointChange: 30
-    Type: 1
-  - MoveDistance: 2
-    AbilityDistance: 3
-    HitPointChange: 10
-    Type: 1
-  allegiance: 0
