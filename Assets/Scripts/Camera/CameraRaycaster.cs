@@ -8,11 +8,26 @@ public class CameraRaycaster : MonoBehaviour
     [SerializeField]
     private LayerMask mask;
 
+    private MessageBus messageBus;
+
+    private Vector3 prevPosition;
+    private Vector3 prevForward;
+
+    void Start()
+    {
+        messageBus = MessageBus.Instance;
+    }
+
     private void Update()
     {
-        if (Physics.Raycast(camera.transform.position, camera.transform.forward, out var hitInfo, float.MaxValue, mask))
+        if ((camera.transform.position != prevPosition || camera.transform.forward != prevForward) &&
+            Physics.Raycast(camera.transform.position, camera.transform.forward, out var hitInfo, float.MaxValue, mask)
+        )
         {
-            Debug.Log(hitInfo.point);
+            messageBus.Publish(MessageBus.EventType.CameraRaycastHitTilemapIdle, hitInfo);
+
+            prevPosition = camera.transform.position;
+            prevForward = camera.transform.forward;
         }
     } 
 }
