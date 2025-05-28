@@ -12,12 +12,29 @@ public class MapEffectVisualizer : MonoBehaviour
     private Tile idleTile;
 
     [SerializeField]
-    private Tile hoveredTile;
+    private Tile highlightTile;
+
+    [SerializeField]
+    private Tile selectTile;
+
+    private readonly HashSet<Vector3Int> affectedTiles = new();
 
     public void HighlightTiles(Vector3Int[] positions)
     {
-        var tiles = positions.Select((_) => hoveredTile).ToArray();
-        tilemap.SetTiles(positions, tiles);
+        ChangeTiles(positions, highlightTile);
+    }
+
+    public void SelectTiles(Vector3Int[] positions)
+    {
+        ChangeTiles(positions, selectTile);
+    }
+
+    private void ChangeTiles(Vector3Int[] positions, Tile tile, bool clearAffected = false)
+    {
+        if (clearAffected) affectedTiles.Clear();
+        else affectedTiles.UnionWith(positions);
+        var tiles = positions.Select((_) => tile).ToArray();
+        tilemap.SetTiles(positions, tiles);    
     }
 
     public Vector3Int WorldToCell(Vector3 world)
@@ -27,12 +44,6 @@ public class MapEffectVisualizer : MonoBehaviour
 
     public void ResetTiles()
     {
-        foreach (Vector3Int pos in tilemap.cellBounds.allPositionsWithin)
-        {
-            if (tilemap.HasTile(pos))
-            {
-                tilemap.SetTile(pos, idleTile);
-            }
-        }
+        ChangeTiles(affectedTiles.ToArray(), idleTile, true);
     }
 }

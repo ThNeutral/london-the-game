@@ -9,6 +9,9 @@ public class CameraRaycaster : MonoBehaviour
     private LayerMask mask;
 
     [SerializeField]
+    private float maxDistance = float.MaxValue;
+
+    [SerializeField]
     private CameraRotation rotation;
 
     private MessageBus messageBus;
@@ -24,7 +27,7 @@ public class CameraRaycaster : MonoBehaviour
     private void Update()
     {
         var isCached = camera.transform.position == prevPosition && camera.transform.forward == prevForward;
-        if (!isCached && Physics.Raycast(camera.transform.position, camera.transform.forward, out var hitInfo, float.MaxValue, mask)
+        if (!isCached && Physics.Raycast(camera.transform.position, camera.transform.forward, out var hitInfo, maxDistance, mask)
         )
         {
             messageBus.Publish(MessageBus.EventType.CameraRaycastHitTilemapIdle, hitInfo);
@@ -34,5 +37,10 @@ public class CameraRaycaster : MonoBehaviour
             prevPosition = camera.transform.position;
             prevForward = camera.transform.forward;
         }
-    } 
+    }
+
+    public bool Raycast(Ray ray, out RaycastHit hit)
+    {
+        return Physics.Raycast(ray, out hit, maxDistance, mask);
+    }
 }

@@ -17,15 +17,33 @@ public class MessageBus : MonoBehaviour
     public enum EventType
     {
         CameraRaycastHitTilemapIdle,
+        CameraClick
     }
 
     public class Event
     {
-        public object payload;
+        private object payload;
 
         public Event(object payload)
         {
             this.payload = payload;
+        }
+
+        public bool ReadPayload<T>(out T value)
+        {
+            if (payload == null || payload is not T)
+            {
+                value = default;
+                return false;
+            }
+
+            value = (T)payload;
+            return true;
+        }
+
+        public bool IsPayloadNull()
+        {
+            return payload is null;
         }
     }
 
@@ -37,14 +55,13 @@ public class MessageBus : MonoBehaviour
         {
             Debug.LogWarning("Multiple MessageBus instances detected. Destroying duplicate.");
             Destroy(gameObject);
+            return;
         }
-        else
+        
+        _instance = this;
+        foreach (EventType type in Enum.GetValues(typeof(EventType)))
         {
-            _instance = this;
-            foreach (EventType type in Enum.GetValues(typeof(EventType)))
-            {
-                callbacks.Add(type, null);
-            }
+            callbacks.Add(type, null);
         }
     }
 

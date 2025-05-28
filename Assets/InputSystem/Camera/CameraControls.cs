@@ -126,6 +126,15 @@ public partial class @CameraControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Click"",
+                    ""type"": ""Value"",
+                    ""id"": ""8004bf28-1c33-483f-aced-8d57a495fc8d"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -238,6 +247,39 @@ public partial class @CameraControls: IInputActionCollection2, IDisposable
                     ""action"": ""CameraZoom"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""78f6f894-213a-48fe-81ad-cdfb283023e0"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Click"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""d1529204-0e8a-401a-b1a1-7cf5b20662bc"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Mouse"",
+                    ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""ac0d0d7a-b088-4e47-99fb-f0b1be9c3ce5"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Mouse"",
+                    ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -267,6 +309,7 @@ public partial class @CameraControls: IInputActionCollection2, IDisposable
         m_Camera_RotateAlongX = m_Camera.FindAction("RotateAlongX", throwIfNotFound: true);
         m_Camera_MoveCamera = m_Camera.FindAction("MoveCamera", throwIfNotFound: true);
         m_Camera_CameraZoom = m_Camera.FindAction("CameraZoom", throwIfNotFound: true);
+        m_Camera_Click = m_Camera.FindAction("Click", throwIfNotFound: true);
     }
 
     ~@CameraControls()
@@ -351,6 +394,7 @@ public partial class @CameraControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Camera_RotateAlongX;
     private readonly InputAction m_Camera_MoveCamera;
     private readonly InputAction m_Camera_CameraZoom;
+    private readonly InputAction m_Camera_Click;
     /// <summary>
     /// Provides access to input actions defined in input action map "Camera".
     /// </summary>
@@ -378,6 +422,10 @@ public partial class @CameraControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Camera/CameraZoom".
         /// </summary>
         public InputAction @CameraZoom => m_Wrapper.m_Camera_CameraZoom;
+        /// <summary>
+        /// Provides access to the underlying input action "Camera/Click".
+        /// </summary>
+        public InputAction @Click => m_Wrapper.m_Camera_Click;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -416,6 +464,9 @@ public partial class @CameraControls: IInputActionCollection2, IDisposable
             @CameraZoom.started += instance.OnCameraZoom;
             @CameraZoom.performed += instance.OnCameraZoom;
             @CameraZoom.canceled += instance.OnCameraZoom;
+            @Click.started += instance.OnClick;
+            @Click.performed += instance.OnClick;
+            @Click.canceled += instance.OnClick;
         }
 
         /// <summary>
@@ -439,6 +490,9 @@ public partial class @CameraControls: IInputActionCollection2, IDisposable
             @CameraZoom.started -= instance.OnCameraZoom;
             @CameraZoom.performed -= instance.OnCameraZoom;
             @CameraZoom.canceled -= instance.OnCameraZoom;
+            @Click.started -= instance.OnClick;
+            @Click.performed -= instance.OnClick;
+            @Click.canceled -= instance.OnClick;
         }
 
         /// <summary>
@@ -520,5 +574,12 @@ public partial class @CameraControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnCameraZoom(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Click" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnClick(InputAction.CallbackContext context);
     }
 }
