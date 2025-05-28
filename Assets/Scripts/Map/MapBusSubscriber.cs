@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MapBusSubscriber : MonoBehaviour
@@ -8,7 +9,11 @@ public class MapBusSubscriber : MonoBehaviour
     [SerializeField]
     private MapEffectVisualizer visualizer;
 
+    [SerializeField]
+    private GridController gridController;
+
     private Vector3Int currentSelectedTile;
+    private Vector3Int lookAtTile;
 
     void Start()
     {
@@ -26,11 +31,9 @@ public class MapBusSubscriber : MonoBehaviour
         }
 
         var newSelectedTile = visualizer.WorldToCell(hit.point);
-        if (currentSelectedTile == newSelectedTile) return;
+        if (lookAtTile == newSelectedTile) return;
 
-        currentSelectedTile = newSelectedTile;
-        visualizer.ResetTiles();
-        visualizer.HighlightTiles(new Vector3Int[] { currentSelectedTile });
+        lookAtTile = newSelectedTile;
     }
 
     void HandleCameraClick(MessageBus.Event @event)
@@ -46,7 +49,15 @@ public class MapBusSubscriber : MonoBehaviour
             // If payload is RaycastHit, select tile in this place
             var tilePosition = visualizer.WorldToCell(hit.point);
             tiles.Add(tilePosition);
-        } else
+            currentSelectedTile = tilePosition;
+
+            var path = gridController.FindPath(lookAtTile, currentSelectedTile);
+            if (path != null)
+            {
+                tiles = tiles.Concat(path).ToList();
+            }
+        }
+        else
         {
             Debug.LogError("Invalid event payload was passed.");
             return;
