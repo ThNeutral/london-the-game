@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class Pathfinder
 {
-    public static List<Vector3Int> FindPath(Dictionary<Vector3Int, bool> grid, Vector3Int start, Vector3Int end)
+    public static Vector3Int[] FindPath(Dictionary<Vector3Int, bool> grid, Vector3Int start, Vector3Int end)
     {
         var openSet = new PriorityQueue<Vector3Int>();
         var cameFrom = new Dictionary<Vector3Int, Vector3Int>();
@@ -26,7 +26,7 @@ public static class Pathfinder
             var current = openSet.Dequeue();
 
             if (current == end)
-                return ReconstructPath(cameFrom, current);
+                return ReconstructPath(cameFrom, current).ToArray();
 
             foreach (var neighbor in GetNeighbors(current, grid))
             {

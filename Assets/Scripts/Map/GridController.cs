@@ -1,24 +1,69 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GridController : MonoBehaviour
 {
-    private Dictionary<Vector3Int, bool> grid;
-    public Dictionary<Vector3Int, bool> Grid
+    private Dictionary<Vector3Int, bool> terrain;
+    public Dictionary<Vector3Int, bool> Terrain
     {
         set
         {
-            if (grid != null)
+            if (terrain != null)
             {
-                Debug.LogError("Grid is already set");
+                Debug.LogError($"{nameof(terrain)} is already set");
                 return;
             }
-            grid = value;
+            terrain = value;
         }
+
+        get => terrain;
     }
 
-    public List<Vector3Int> FindPath(Vector3Int start, Vector3Int end)
+    private Dictionary<Vector3Int, bool> characters;
+    public Dictionary<Vector3Int, bool> Characters
     {
-        return Pathfinder.FindPath(grid, start, end);
+        set
+        {
+            if (characters != null)
+            {
+                Debug.LogError($"{nameof(characters)} is already set");
+                return;
+            }
+
+            var invalidPositions = new List<Vector3Int>();
+            foreach (var kvp in value)
+            {
+                if (!terrain.ContainsKey(kvp.Key))
+                {
+                    invalidPositions.Add(kvp.Key);
+                }
+            }
+
+            if (invalidPositions.Count != 0)
+            {
+                Debug.LogError($"Positions {invalidPositions.Select((pos, index) => $"{pos}{(index != invalidPositions.Count ? "," : "")}")} do not exist in terrain");
+                return;
+            }
+
+            characters = value;
+        }
+
+        get => characters;
+    }
+
+    public Vector3Int[] FindPath(Vector3Int start, Vector3Int end)
+    {
+        return Pathfinder.FindPath(terrain, start, end);
+    }
+
+    public void MoveCharacter(Vector3Int from, Vector3Int to)
+    {
+        if (!terrain.ContainsKey(from) || !terrain.ContainsKey(to)) return;
+
+        if (!characters.TryGetValue(from, out var fromCharacter) || !fromCharacter) return;
+
+        characters.Remove(from);
+        characters[to] = fromCharacter;
     }
 }

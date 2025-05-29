@@ -14,6 +14,9 @@ public class CameraRaycaster : MonoBehaviour
     [SerializeField]
     private CameraRotation rotation;
 
+    [SerializeField]
+    private CameraClicker cameraClicker;
+
     private MessageBus messageBus;
 
     private Vector3 prevPosition;
@@ -27,10 +30,9 @@ public class CameraRaycaster : MonoBehaviour
     private void Update()
     {
         var isCached = camera.transform.position == prevPosition && camera.transform.forward == prevForward;
-        if (!isCached && Physics.Raycast(camera.transform.position, camera.transform.forward, out var hitInfo, maxDistance, mask)
-        )
+        if (!isCached && Physics.Raycast(camera.transform.position, camera.transform.forward, out var hitInfo, maxDistance, mask))
         {
-            messageBus.Publish(MessageBus.EventType.CameraRaycastHitTilemapIdle, hitInfo);
+            messageBus.Publish(MessageBus.EventType.CameraMove, hitInfo);
 
             rotation.Target = hitInfo.point;
 

@@ -16,8 +16,10 @@ public class MessageBus : MonoBehaviour
 
     public enum EventType
     {
-        CameraRaycastHitTilemapIdle,
-        CameraClick
+        CameraMove,
+        CameraClick,
+        MouseMove,
+        ClickUnlock
     }
 
     public class Event

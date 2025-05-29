@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class MapBusSubscriber : MonoBehaviour
 {
+    private enum SelectionState
+    {
+        None,
+        SelectedTile,
+    }
+
     private MessageBus bus;
 
     [SerializeField]
@@ -14,56 +20,114 @@ public class MapBusSubscriber : MonoBehaviour
 
     private Vector3Int currentSelectedTile;
     private Vector3Int lookAtTile;
+    private Vector3Int mouseAtTile;
+
+    private SelectionState selectionState = SelectionState.None;
+
+    private bool clickUnlocked = false;
 
     void Start()
     {
         bus = MessageBus.Instance;
-        bus.Subscribe(MessageBus.EventType.CameraRaycastHitTilemapIdle, HandleCameraRaycastHitTilemapIdle);
+        bus.Subscribe(MessageBus.EventType.CameraMove, HandleCameraMove);
         bus.Subscribe(MessageBus.EventType.CameraClick, HandleCameraClick);
+        bus.Subscribe(MessageBus.EventType.ClickUnlock, HandleClickUnlock);
+        bus.Subscribe(MessageBus.EventType.MouseMove, HandleMouseMove);
     }
 
-    void HandleCameraRaycastHitTilemapIdle(MessageBus.Event @event)
+    private void HandleClickUnlock(MessageBus.Event @event)
     {
+        if (!@event.ReadPayload<bool>(out var @new))
+        {
+            Debug.LogError("Unexpected invalid value in @event.ReadPayload");
+            return;
+        }
+
+        clickUnlocked = @new;
+    }
+
+    private void HandleCameraMove(MessageBus.Event @event)
+    {
+        if (clickUnlocked) return;
+
         if (!@event.ReadPayload<RaycastHit>(out var hit))
         {
             Debug.LogError("Unexpected invalid value in @event.ReadPayload");
             return;
         }
 
-        var newSelectedTile = visualizer.WorldToCell(hit.point);
-        if (lookAtTile == newSelectedTile) return;
+        lookAtTile = visualizer.WorldToCell(hit.point);
 
-        lookAtTile = newSelectedTile;
+        switch (selectionState)
+        {
+            case SelectionState.SelectedTile:
+                {
+                    var path = gridController.FindPath(currentSelectedTile, lookAtTile);
+
+                    visualizer.ResetTiles();
+                    visualizer.HighlightTiles(path);
+                    visualizer.SelectTiles(new Vector3Int[] { currentSelectedTile, lookAtTile });
+
+                    break;
+                }
+        }
+    }
+    
+    private void HandleMouseMove(MessageBus.Event @event)
+    {
+        if (!clickUnlocked) return;
+
+        if (!@event.ReadPayload<RaycastHit>(out var hit))
+        {
+            Debug.LogError("Unexpected invalid value in @event.ReadPayload");
+            return;
+        }
+
+        mouseAtTile = visualizer.WorldToCell(hit.point);
+
+        switch (selectionState)
+        {
+            case SelectionState.SelectedTile:
+                {
+                    var path = gridController.FindPath(currentSelectedTile, mouseAtTile);
+
+                    visualizer.ResetTiles();
+                    visualizer.HighlightTiles(path);
+                    visualizer.SelectTiles(new Vector3Int[] { currentSelectedTile, mouseAtTile });
+
+                    break;
+                }
+        }
     }
 
-    void HandleCameraClick(MessageBus.Event @event)
+    private void HandleCameraClick(MessageBus.Event @event)
     {
-        var tiles = new List<Vector3Int>();
-        if (@event.IsPayloadNull())
-        {
-            // If payload is null, select tile under camera
-            tiles.Add(currentSelectedTile);
-        }
-        else if (@event.ReadPayload<RaycastHit>(out var hit))
-        {
-            // If payload is RaycastHit, select tile in this place
-            var tilePosition = visualizer.WorldToCell(hit.point);
-            tiles.Add(tilePosition);
-            currentSelectedTile = tilePosition;
-
-            var path = gridController.FindPath(lookAtTile, currentSelectedTile);
-            if (path != null)
-            {
-                tiles = tiles.Concat(path).ToList();
-            }
-        }
-        else
+        if (!@event.ReadPayload<RaycastHit>(out var hit))
         {
             Debug.LogError("Invalid event payload was passed.");
             return;
         }
 
-        visualizer.ResetTiles();
-        visualizer.SelectTiles(tiles.ToArray());
+        switch (selectionState)
+        {
+            case SelectionState.None:
+                {
+                    currentSelectedTile = visualizer.WorldToCell(hit.point);
+
+                    visualizer.ResetTiles();
+                    visualizer.SelectTiles(new Vector3Int[] { currentSelectedTile });
+
+                    selectionState = SelectionState.SelectedTile;
+                    break;
+                }
+            case SelectionState.SelectedTile:
+                {
+                    visualizer.ResetTiles();
+                    gridController.MoveCharacter(currentSelectedTile, visualizer.WorldToCell(hit.point));
+
+                    selectionState = SelectionState.None;
+                    break;
+                }
+        }
     }
 }

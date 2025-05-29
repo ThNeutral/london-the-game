@@ -12,12 +12,13 @@ public class MapGridGenerator : MonoBehaviour
 
     void Start()
     {
-        GenerateGrid();
+        GenerateTerrain();
+        GenerateCharacterPositions();
     }
 
-    private void GenerateGrid()
+    private void GenerateTerrain()
     {
-        var grid = new Dictionary<Vector3Int, bool>();
+        var terrain = new Dictionary<Vector3Int, bool>();
         var bounds = tilemap.cellBounds;
         for (int x = bounds.xMin; x < bounds.xMax; x++)
         {
@@ -26,9 +27,18 @@ public class MapGridGenerator : MonoBehaviour
                 var cellPos = new Vector3Int(x, y, 0);
                 var tile = tilemap.GetTile(cellPos);
                 if (tile == null) continue;
-                grid.Add(cellPos, true);
+                terrain.Add(cellPos, true);
             }
         }
-        gridController.Grid = grid;
+        gridController.Terrain = terrain;
+    }
+
+    private void GenerateCharacterPositions()
+    {
+        var characters = new Dictionary<Vector3Int, bool>
+        {
+            { new Vector3Int(-2, -2), true }
+        };
+        gridController.Characters = characters;
     }
 }
