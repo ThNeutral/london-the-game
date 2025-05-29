@@ -113,6 +113,7 @@ public class MapBusSubscriber : MonoBehaviour
             case SelectionState.None:
                 {
                     currentSelectedTile = visualizer.WorldToCell(hit.point);
+                    if (!gridController.TryGetCharacter(currentSelectedTile, out var _)) return;
 
                     visualizer.ResetTiles();
                     visualizer.SelectTiles(new Vector3Int[] { currentSelectedTile });
@@ -123,7 +124,7 @@ public class MapBusSubscriber : MonoBehaviour
             case SelectionState.SelectedTile:
                 {
                     visualizer.ResetTiles();
-                    gridController.MoveCharacter(currentSelectedTile, visualizer.WorldToCell(hit.point));
+                    if (!gridController.TryMoveCharacter(currentSelectedTile, visualizer.WorldToCell(hit.point))) return;
 
                     selectionState = SelectionState.None;
                     break;

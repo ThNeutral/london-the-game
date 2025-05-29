@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class GridController : MonoBehaviour
 {
+    [SerializeField]
+    private MapEffectVisualizer visualizer;
+
     private Dictionary<Vector3Int, bool> terrain;
     public Dictionary<Vector3Int, bool> Terrain
     {
@@ -20,8 +23,8 @@ public class GridController : MonoBehaviour
         get => terrain;
     }
 
-    private Dictionary<Vector3Int, bool> characters;
-    public Dictionary<Vector3Int, bool> Characters
+    private Dictionary<Vector3Int, Character> characters;
+    public Dictionary<Vector3Int, Character> Characters
     {
         set
         {
@@ -52,18 +55,37 @@ public class GridController : MonoBehaviour
         get => characters;
     }
 
+    public bool TryGetCharacter(Vector3Int pos, out Character character)
+    {
+        return characters.TryGetValue(pos, out character);
+    }
+
     public Vector3Int[] FindPath(Vector3Int start, Vector3Int end)
     {
         return Pathfinder.FindPath(terrain, start, end);
     }
 
-    public void MoveCharacter(Vector3Int from, Vector3Int to)
+    public bool TryMoveCharacter(Vector3Int from, Vector3Int to, Vector3Int[] path = null)
     {
-        if (!terrain.ContainsKey(from) || !terrain.ContainsKey(to)) return;
+        if (!terrain.ContainsKey(from) || !terrain.ContainsKey(to)) return false;
 
-        if (!characters.TryGetValue(from, out var fromCharacter) || !fromCharacter) return;
+        if (!characters.TryGetValue(from, out var character) || !character) return false;
+
+        path ??= FindPath(from, to);
+        if (path == null) return false;
+
+        var worldPath = new List<Vector3>(path.Length);
+        foreach (var pos in path)
+        {
+            var world = visualizer.CellToWorldCentered(pos);
+            world.y += 1f;
+            worldPath.Add(world);   
+        }
 
         characters.Remove(from);
-        characters[to] = fromCharacter;
+        characters[to] = character;
+        character.Path = worldPath;
+
+        return true;
     }
 }

@@ -42,6 +42,21 @@ public class MapEffectVisualizer : MonoBehaviour
         return tilemap.WorldToCell(world);
     }
 
+    public Vector3 CellToWorld(Vector3Int world)
+    {
+        return tilemap.CellToWorld(world);
+    }
+
+    public Vector3 CellToWorldCentered(Vector3Int cell)
+    {
+        var worldPos = tilemap.CellToWorld(cell);
+        var cellSize = tilemap.cellSize;
+        cellSize.z = cellSize.y;
+        cellSize.y = 0;
+        var tileCenterOffset = cellSize * 0.5f;
+        return worldPos + tileCenterOffset;
+    }
+
     public void ResetTiles()
     {
         ChangeTiles(affectedTiles.ToArray(), idleTile, true);

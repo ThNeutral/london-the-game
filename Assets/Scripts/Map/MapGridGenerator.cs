@@ -10,6 +10,12 @@ public class MapGridGenerator : MonoBehaviour
     [SerializeField]
     private GridController gridController;
 
+    [SerializeField]
+    private MapEffectVisualizer visualizer;
+
+    [SerializeField]
+    private GameObject allyPrefab;
+
     void Start()
     {
         GenerateTerrain();
@@ -35,9 +41,16 @@ public class MapGridGenerator : MonoBehaviour
 
     private void GenerateCharacterPositions()
     {
-        var characters = new Dictionary<Vector3Int, bool>
+        var tile = new Vector3Int(-2, -2);
+        var character = Instantiate(allyPrefab).GetComponent<Character>();
+
+        var world = visualizer.CellToWorldCentered(tile);
+        world.y += 1f;
+        character.transform.position = world;
+
+        var characters = new Dictionary<Vector3Int, Character>
         {
-            { new Vector3Int(-2, -2), true }
+            { tile, character }
         };
         gridController.Characters = characters;
     }

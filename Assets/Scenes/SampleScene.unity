@@ -1213,6 +1213,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ed4aafd1b3868140bdde76807f9daa0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  visualizer: {fileID: 1297053625}
 --- !u!114 &1297053628
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1227,6 +1228,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tilemap: {fileID: 1297053622}
   gridController: {fileID: 1297053627}
+  visualizer: {fileID: 1297053625}
+  allyPrefab: {fileID: 6360953463903924089, guid: 11c5c2a7fcd83e24a9dd98486509f899, type: 3}
 --- !u!1 &1395705316
 GameObject:
   m_ObjectHideFlags: 0
@@ -1513,7 +1516,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 10
+  orthographic size: 5
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -1631,8 +1634,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cameraZoomRate: 5
   zoomSmoothness: 5
-  minZoom: 7
-  maxZoom: 15
+  minZoom: 3
+  maxZoom: 10
   camera: {fileID: 1865547516}
 --- !u!114 &1911551704
 MonoBehaviour:
@@ -1702,6 +1705,7 @@ MonoBehaviour:
     m_Bits: 8
   maxDistance: 3.4028235e+38
   rotation: {fileID: 1911551704}
+  cameraClicker: {fileID: 1911551708}
 --- !u!114 &1911551708
 MonoBehaviour:
   m_ObjectHideFlags: 0
