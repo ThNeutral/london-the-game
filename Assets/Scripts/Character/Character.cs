@@ -9,10 +9,16 @@ public class Character : MonoBehaviour
     [SerializeField]
     private CharacterStats stats;
 
-    private List<Vector3> path;
+    private readonly List<Vector3> path = new();
     public List<Vector3> Path
     {
-        set => path = value;
+        set
+        {
+            foreach (var tile in value)
+            {
+                path.Add(tile);
+            }
+        }
     }
 
     private void Update()
@@ -22,15 +28,14 @@ public class Character : MonoBehaviour
 
     private void Move()
     {
-        if (path == null) return;
+        if (path.Count == 0) return;
 
         var nextNode = path[0];
-        if (Vector3.Distance(transform.position, nextNode) < 0.05f)
+        if (Vector3.Distance(transform.position, nextNode) < 0.01f)
         {
             path.RemoveAt(0);
             if (path.Count == 0)
             {
-                path = null;
                 return;
             }
             nextNode = path[0];

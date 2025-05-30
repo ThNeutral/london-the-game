@@ -15,8 +15,9 @@ public class MapBusSubscriber : MonoBehaviour
     [SerializeField]
     private MapEffectVisualizer visualizer;
 
-    [SerializeField]
     private GridController gridController;
+
+    private TurnController turnController;
 
     private Vector3Int currentSelectedTile;
     private Vector3Int lookAtTile;
@@ -33,6 +34,9 @@ public class MapBusSubscriber : MonoBehaviour
         bus.Subscribe(MessageBus.EventType.CameraClick, HandleCameraClick);
         bus.Subscribe(MessageBus.EventType.ClickUnlock, HandleClickUnlock);
         bus.Subscribe(MessageBus.EventType.MouseMove, HandleMouseMove);
+
+        gridController = GridController.Instance;
+        turnController = TurnController.Instance;
     }
 
     private void HandleClickUnlock(MessageBus.Event @event)
@@ -112,8 +116,10 @@ public class MapBusSubscriber : MonoBehaviour
         {
             case SelectionState.None:
                 {
+
                     currentSelectedTile = visualizer.WorldToCell(hit.point);
-                    if (!gridController.TryGetCharacter(currentSelectedTile, out var _)) return;
+                    if (!gridController.TryGetCharacter(currentSelectedTile, out var character)) return;
+                    if (!turnController.CanMove(character)) return;
 
                     visualizer.ResetTiles();
                     visualizer.SelectTiles(new Vector3Int[] { currentSelectedTile });
@@ -124,7 +130,10 @@ public class MapBusSubscriber : MonoBehaviour
             case SelectionState.SelectedTile:
                 {
                     visualizer.ResetTiles();
+                    if (!gridController.TryGetCharacter(currentSelectedTile, out var character)) return;
                     if (!gridController.TryMoveCharacter(currentSelectedTile, visualizer.WorldToCell(hit.point))) return;
+
+                    turnController.Move(character);
 
                     selectionState = SelectionState.None;
                     break;

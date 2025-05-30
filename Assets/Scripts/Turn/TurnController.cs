@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum Side
@@ -9,6 +10,28 @@ public enum Side
 
 public class TurnController : MonoBehaviour
 {
+    private static TurnController _instance;
+    public static TurnController Instance
+    {
+        get
+        {
+            Debug.Assert(_instance != null, "Turn Controller was not created in the scene.");
+            return _instance;
+        }
+    }
+
+    private void Awake()
+    {
+        if (_instance != null)
+        {
+            Debug.LogWarning("Multiple Turn Controller instances detected. Destroying duplicate.");
+            Destroy(gameObject);
+            return;
+        }
+        
+        _instance = this;
+    }
+
     public class CharacterTurnData
     {
         public Side side;
@@ -18,7 +41,7 @@ public class TurnController : MonoBehaviour
         {
             this.side = side;
             this.available = available;
-        } 
+        }
     }
 
     [SerializeField]
@@ -28,6 +51,15 @@ public class TurnController : MonoBehaviour
     private readonly Dictionary<Character, Side> sides = new();
     private readonly Dictionary<Character, bool> turns = new();
 
+    public void AddCharacter(Character character, Side side, bool available)
+    {
+        Debug.Assert(!sides.ContainsKey(character));
+        Debug.Assert(!turns.ContainsKey(character));
+
+        sides.Add(character, side);
+        turns.Add(character, available);
+    }
+
     private void Start()
     {
         currentTurn = initialTurn;
@@ -36,7 +68,7 @@ public class TurnController : MonoBehaviour
     public void Move(Character character)
     {
         Debug.Assert(CanMove(character), "Expected character to be able to move");
-        turns[character] = true;
+        turns[character] = false;
 
         if (IsEndOfTurn()) EndTurn();
     }
@@ -55,27 +87,27 @@ public class TurnController : MonoBehaviour
 
     public void EndTurn()
     {
-        foreach (var kvp in turns)
+        foreach (var key in turns.Keys.ToList())
         {
-            turns[kvp.Key] = true;
+            turns[key] = true;
         }
 
-        currentTurn = NextSide(currentTurn);
+        NextSide();
     }
 
-    private Side NextSide(Side prev)
+    private void NextSide()
     {
-        switch (prev)
+        switch (currentTurn)
         {
             case Side.Player:
-                return Side.AI;
-
+                currentTurn = Side.AI;
+                break;
             case Side.AI:
-                return Side.Player;
-
+                currentTurn = Side.Player;
+                break;
             default:
                 Debug.LogError("how did you even got here????");
-                return default;
+                break;
         }
     }
 

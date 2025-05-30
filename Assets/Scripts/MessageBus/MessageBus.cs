@@ -14,6 +14,22 @@ public class MessageBus : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        if (_instance != null)
+        {
+            Debug.LogWarning("Multiple MessageBus instances detected. Destroying duplicate.");
+            Destroy(gameObject);
+            return;
+        }
+        
+        _instance = this;
+        foreach (EventType type in Enum.GetValues(typeof(EventType)))
+        {
+            callbacks.Add(type, null);
+        }
+    }
+
     public enum EventType
     {
         CameraMove,
@@ -50,22 +66,6 @@ public class MessageBus : MonoBehaviour
     }
 
     private readonly Dictionary<EventType, Action<Event>> callbacks = new();
-
-    private void Awake()
-    {
-        if (_instance != null)
-        {
-            Debug.LogWarning("Multiple MessageBus instances detected. Destroying duplicate.");
-            Destroy(gameObject);
-            return;
-        }
-        
-        _instance = this;
-        foreach (EventType type in Enum.GetValues(typeof(EventType)))
-        {
-            callbacks.Add(type, null);
-        }
-    }
 
     public void Subscribe(EventType type, Action<Event> action)
     {

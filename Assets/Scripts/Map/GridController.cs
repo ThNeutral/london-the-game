@@ -1,58 +1,46 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GridController : MonoBehaviour
 {
+    private static GridController _instance;
+    public static GridController Instance
+    {
+        get
+        {
+            if (_instance == null) Debug.LogError("Grid Controller was not created in the scene.");
+            return _instance;
+        }
+    }
+
+    private void Awake()
+    {
+        if (_instance != null)
+        {
+            Debug.LogWarning("Multiple Grid Controller instances detected. Destroying duplicate.");
+            Destroy(gameObject);
+            return;
+        }
+        
+        _instance = this;
+    }
+
     [SerializeField]
     private MapEffectVisualizer visualizer;
 
-    private Dictionary<Vector3Int, bool> terrain;
-    public Dictionary<Vector3Int, bool> Terrain
+    private readonly Dictionary<Vector3Int, bool> terrain = new();
+    public void AddTerrainTile(Vector3Int pos, bool tile)
     {
-        set
-        {
-            if (terrain != null)
-            {
-                Debug.LogError($"{nameof(terrain)} is already set");
-                return;
-            }
-            terrain = value;
-        }
-
-        get => terrain;
+        terrain.Add(pos, tile);
     }
 
-    private Dictionary<Vector3Int, Character> characters;
-    public Dictionary<Vector3Int, Character> Characters
+    private readonly Dictionary<Vector3Int, Character> characters = new();
+    public void AddCharacter(Vector3Int pos, Character character)
     {
-        set
-        {
-            if (characters != null)
-            {
-                Debug.LogError($"{nameof(characters)} is already set");
-                return;
-            }
-
-            var invalidPositions = new List<Vector3Int>();
-            foreach (var kvp in value)
-            {
-                if (!terrain.ContainsKey(kvp.Key))
-                {
-                    invalidPositions.Add(kvp.Key);
-                }
-            }
-
-            if (invalidPositions.Count != 0)
-            {
-                Debug.LogError($"Positions {invalidPositions.Select((pos, index) => $"{pos}{(index != invalidPositions.Count ? "," : "")}")} do not exist in terrain");
-                return;
-            }
-
-            characters = value;
-        }
-
-        get => characters;
+        Debug.Assert(!terrain.ContainsValue(character), "Given character already exists in grid");
+        characters.Add(pos, character);
     }
 
     public bool TryGetCharacter(Vector3Int pos, out Character character)
