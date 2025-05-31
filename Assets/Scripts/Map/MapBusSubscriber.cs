@@ -87,13 +87,17 @@ public class MapBusSubscriber : MonoBehaviour
             return;
         }
 
-        mouseAtTile = visualizer.WorldToCell(hit.point);
+        var newMouseAtTile = visualizer.WorldToCell(hit.point);
 
         switch (selectionState)
         {
             case SelectionState.SelectedTile:
                 {
-                    var path = gridController.FindPath(currentSelectedTile, mouseAtTile);
+                    if (gridController.TryGetCharacter(currentSelectedTile, out var character))
+                    if (gridController.TryGetCharacter(newMouseAtTile, out var _)) return;
+
+                    mouseAtTile = newMouseAtTile;
+                    var path = gridController.FindPath(currentSelectedTile, mouseAtTile, character);
 
                     visualizer.ResetTiles();
                     visualizer.HighlightTiles(path);
@@ -116,7 +120,6 @@ public class MapBusSubscriber : MonoBehaviour
         {
             case SelectionState.None:
                 {
-
                     currentSelectedTile = visualizer.WorldToCell(hit.point);
                     if (!gridController.TryGetCharacter(currentSelectedTile, out var character)) return;
                     if (!turnController.CanMove(character)) return;
@@ -131,7 +134,12 @@ public class MapBusSubscriber : MonoBehaviour
                 {
                     visualizer.ResetTiles();
                     if (!gridController.TryGetCharacter(currentSelectedTile, out var character)) return;
-                    if (!gridController.TryMoveCharacter(currentSelectedTile, visualizer.WorldToCell(hit.point))) return;
+
+                    var endTile = visualizer.WorldToCell(hit.point);
+                    if (gridController.TryGetCharacter(endTile, out var _)) return;
+
+                    var path = gridController.FindPath(currentSelectedTile, endTile, character);
+                    if (!gridController.TryMoveCharacter(path)) return;
 
                     turnController.Move(character);
 

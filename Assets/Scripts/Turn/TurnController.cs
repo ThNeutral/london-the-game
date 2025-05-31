@@ -42,6 +42,11 @@ public class TurnController : MonoBehaviour
             this.side = side;
             this.available = available;
         }
+
+        public override string ToString()
+        {
+            return $"CharacterTurnData(side: {side}; available: {available})";
+        }
     }
 
     [SerializeField]
@@ -120,8 +125,11 @@ public class TurnController : MonoBehaviour
 
     public CharacterTurnData GetCharacterTurnData(Character character)
     {
-        Debug.Assert(sides.TryGetValue(character, out var side), "tried to access side of non-registered character");
-        Debug.Assert(turns.TryGetValue(character, out var turn), "tried to access turn of non-registered character");
+        Side side = Side.Player;
+        Debug.Assert(sides.TryGetValue(character, out side), "tried to access side of non-registered character");
+
+        bool turn = false;
+        Debug.Assert(turns.TryGetValue(character, out turn), "tried to access turn of non-registered character");
 
         return new(side, turn);
     }
