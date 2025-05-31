@@ -49,10 +49,27 @@ public class GridController : MonoBehaviour
     }
 
     private TurnController turnController;
+    private MessageBus bus;
 
     private void Start()
     {
         turnController = TurnController.Instance;
+        bus = MessageBus.Instance;
+        bus.Subscribe(MessageBus.EventType.CharacterDeath, OnCharacterDeath);
+    }
+
+    private void OnCharacterDeath(MessageBus.Event @event)
+    {
+        Character character = null;
+        Debug.Assert(@event.ReadPayload(out character));
+
+        var keysToRemove = characters.Where(kvp => kvp.Value == character).Select(kvp => kvp.Key).ToList();
+        Debug.Assert(keysToRemove.Count == 0);
+
+        foreach (var key in keysToRemove)
+        {
+            characters.Remove(key);
+        }
     }
 
     public Vector3Int[] FindPath(Vector3Int start, Vector3Int end, Character character = null)

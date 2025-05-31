@@ -35,7 +35,8 @@ public class MessageBus : MonoBehaviour
         CameraMove,
         CameraClick,
         MouseMove,
-        ClickUnlock
+        ClickUnlock,
+        CharacterDeath
     }
 
     public class Event

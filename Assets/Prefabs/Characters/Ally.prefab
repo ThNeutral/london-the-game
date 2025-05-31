@@ -123,3 +123,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e89cc961425584a58a43a1bd8e47843a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stats:
+    Speed: 3
+    Health: 100
+  abilities:
+  - Damage: 30
+    CanInteractWithAlly: 0
+    CanInteractWithEnemy: 1

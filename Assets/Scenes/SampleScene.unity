@@ -1278,7 +1278,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tilemap: {fileID: 1297053622}
   idleTile: {fileID: 11400000, guid: 8d5d56065db3049de9c4d08a5f0b87a6, type: 2}
-  highlightTile: {fileID: 11400000, guid: 8f2c476e4c85b4fe4977645ac639c050, type: 2}
+  attackTile: {fileID: 11400000, guid: 8c0e6db0519114954b84818557457c8b, type: 2}
+  moveTile: {fileID: 11400000, guid: 8f2c476e4c85b4fe4977645ac639c050, type: 2}
   selectTile: {fileID: 11400000, guid: ed47c7c02709f4775898b962a2440c54, type: 2}
 --- !u!114 &1297053626
 MonoBehaviour:

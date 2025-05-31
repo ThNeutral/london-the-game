@@ -12,16 +12,23 @@ public class MapEffectVisualizer : MonoBehaviour
     private Tile idleTile;
 
     [SerializeField]
-    private Tile highlightTile;
+    private Tile attackTile;
+
+    [SerializeField]
+    private Tile moveTile;
 
     [SerializeField]
     private Tile selectTile;
 
     private readonly HashSet<Vector3Int> affectedTiles = new();
 
-    public void HighlightTiles(Vector3Int[] positions)
+    public void AttackTiles(Vector3Int[] positions)
     {
-        ChangeTiles(positions, highlightTile);
+        ChangeTiles(positions, attackTile);
+    }
+    public void MoveTiles(Vector3Int[] positions)
+    {
+        ChangeTiles(positions, moveTile);
     }
 
     public void SelectTiles(Vector3Int[] positions)

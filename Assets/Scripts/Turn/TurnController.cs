@@ -65,9 +65,23 @@ public class TurnController : MonoBehaviour
         turns.Add(character, available);
     }
 
+    private MessageBus bus;
+
     private void Start()
     {
+        bus = MessageBus.Instance;
+        bus.Subscribe(MessageBus.EventType.CharacterDeath, OnCharacterDeath);
+
         currentTurn = initialTurn;
+    }
+
+    private void OnCharacterDeath(MessageBus.Event @event)
+    {
+        Character character = null;
+        Debug.Assert(@event.ReadPayload(out character));
+
+        sides.Remove(character);
+        turns.Remove(character);
     }
 
     public void Move(Character character)

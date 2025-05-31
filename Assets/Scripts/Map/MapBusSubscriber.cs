@@ -1,13 +1,16 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 public class MapBusSubscriber : MonoBehaviour
 {
     private enum SelectionState
     {
         None,
-        SelectedTile,
+        Move,
+        Attack
     }
 
     private MessageBus bus;
@@ -19,7 +22,9 @@ public class MapBusSubscriber : MonoBehaviour
 
     private TurnController turnController;
 
-    private Vector3Int currentSelectedTile;
+    private Vector3Int startTile;
+    private Vector3Int endMoveTile;
+
     private Vector3Int lookAtTile;
     private Vector3Int mouseAtTile;
 
@@ -64,13 +69,13 @@ public class MapBusSubscriber : MonoBehaviour
 
         switch (selectionState)
         {
-            case SelectionState.SelectedTile:
+            case SelectionState.Move:
                 {
-                    var path = gridController.FindPath(currentSelectedTile, lookAtTile);
+                    var path = gridController.FindPath(startTile, lookAtTile);
 
                     visualizer.ResetTiles();
-                    visualizer.HighlightTiles(path);
-                    visualizer.SelectTiles(new Vector3Int[] { currentSelectedTile, lookAtTile });
+                    visualizer.MoveTiles(path);
+                    visualizer.SelectTiles(new Vector3Int[] { startTile, lookAtTile });
 
                     break;
                 }
@@ -91,17 +96,33 @@ public class MapBusSubscriber : MonoBehaviour
 
         switch (selectionState)
         {
-            case SelectionState.SelectedTile:
+            case SelectionState.Move:
                 {
-                    if (gridController.TryGetCharacter(currentSelectedTile, out var character))
+                    if (gridController.TryGetCharacter(startTile, out var character))
                     if (gridController.TryGetCharacter(newMouseAtTile, out var _)) return;
 
                     mouseAtTile = newMouseAtTile;
-                    var path = gridController.FindPath(currentSelectedTile, mouseAtTile, character);
+                    var path = gridController.FindPath(startTile, mouseAtTile, character);
 
                     visualizer.ResetTiles();
-                    visualizer.HighlightTiles(path);
-                    visualizer.SelectTiles(new Vector3Int[] { currentSelectedTile, mouseAtTile });
+                    visualizer.MoveTiles(path);
+                    visualizer.SelectTiles(new Vector3Int[] { startTile, mouseAtTile });
+
+                    break;
+                }
+            case SelectionState.Attack: 
+                {
+                    if (gridController.TryGetCharacter(startTile, out var character))
+                    if (gridController.TryGetCharacter(endMoveTile, out var _)) return;
+
+                    mouseAtTile = newMouseAtTile;
+                    var movePath = gridController.FindPath(startTile, endMoveTile, character);
+                    var attackPath = gridController.FindPath(endMoveTile, mouseAtTile);
+
+                    visualizer.ResetTiles();
+                    visualizer.MoveTiles(movePath);
+                    visualizer.AttackTiles(attackPath);
+                    visualizer.SelectTiles(new Vector3Int[] { startTile, endMoveTile });
 
                     break;
                 }
@@ -120,28 +141,44 @@ public class MapBusSubscriber : MonoBehaviour
         {
             case SelectionState.None:
                 {
-                    currentSelectedTile = visualizer.WorldToCell(hit.point);
-                    if (!gridController.TryGetCharacter(currentSelectedTile, out var character)) return;
+                    startTile = visualizer.WorldToCell(hit.point);
+                    if (!gridController.TryGetCharacter(startTile, out var character)) return;
                     if (!turnController.CanMove(character)) return;
 
                     visualizer.ResetTiles();
-                    visualizer.SelectTiles(new Vector3Int[] { currentSelectedTile });
+                    visualizer.SelectTiles(new Vector3Int[] { startTile });
 
-                    selectionState = SelectionState.SelectedTile;
+                    selectionState = SelectionState.Move;
                     break;
                 }
-            case SelectionState.SelectedTile:
+            case SelectionState.Move:
+                {
+                    if (!gridController.TryGetCharacter(startTile, out var _)) return;
+
+                    endMoveTile = visualizer.WorldToCell(hit.point);
+                    if (gridController.TryGetCharacter(endMoveTile, out var _)) return;
+
+                    selectionState = SelectionState.Attack;
+                    break;
+                }
+            case SelectionState.Attack:
                 {
                     visualizer.ResetTiles();
-                    if (!gridController.TryGetCharacter(currentSelectedTile, out var character)) return;
+                    if (!gridController.TryGetCharacter(startTile, out var characterActor)) return;
 
-                    var endTile = visualizer.WorldToCell(hit.point);
-                    if (gridController.TryGetCharacter(endTile, out var _)) return;
+                    var endAttackTile = visualizer.WorldToCell(hit.point);
+                    if (!gridController.TryGetCharacter(endAttackTile, out var characterTarget)) return;
 
-                    var path = gridController.FindPath(currentSelectedTile, endTile, character);
+                    var actorTurnData = turnController.GetCharacterTurnData(characterActor);
+                    var targetTurnData = turnController.GetCharacterTurnData(characterTarget);
+
+                    var ability = characterActor.Abilities[0];
+                    if (ability.CanInteractWithAlly && (actorTurnData.side == targetTurnData.side)) characterTarget.ReceiveDamage(ability.Damage);
+                    if (ability.CanInteractWithEnemy && (actorTurnData.side != targetTurnData.side)) characterTarget.ReceiveDamage(ability.Damage);
+                    
+                    var path = gridController.FindPath(startTile, endMoveTile, characterActor);
                     if (!gridController.TryMoveCharacter(path)) return;
-
-                    turnController.Move(character);
+                    turnController.Move(characterActor);
 
                     selectionState = SelectionState.None;
                     break;

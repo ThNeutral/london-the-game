@@ -125,3 +125,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stats:
     Speed: 3
+    Health: 30
+  abilities: []

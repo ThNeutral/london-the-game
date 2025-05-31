@@ -8,8 +8,21 @@ public class Character : MonoBehaviour
 
     [SerializeField]
     private CharacterStats stats;
+    public CharacterStats Stats { get => stats; }
+
+    [SerializeField]
+    private List<CharacterAbility> abilities;
+    public List<CharacterAbility> Abilities { get => abilities; }
 
     private readonly List<Vector3> path = new();
+
+    private MessageBus bus;
+
+    private void Start()
+    {
+        bus = MessageBus.Instance;
+    }
+
     public List<Vector3> Path
     {
         set
@@ -42,5 +55,15 @@ public class Character : MonoBehaviour
         }
 
         transform.position = Vector3.MoveTowards(transform.position, nextNode, stats.Speed * SpeedCoefficient * Time.deltaTime);
+    }
+
+    public void ReceiveDamage(int damage)
+    {
+        stats.Health -= damage;
+        if (stats.Health <= 0)
+        {
+            bus.Publish(MessageBus.EventType.CharacterDeath, this);
+            Destroy(gameObject);
+        }
     }
 }
