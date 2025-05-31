@@ -126,4 +126,9 @@ MonoBehaviour:
   stats:
     Speed: 3
     Health: 30
-  abilities: []
+    MoveDistance: 5
+  abilities:
+  - Damage: 10
+    Distance: 1
+    CanInteractWithAlly: 0
+    CanInteractWithEnemy: 1

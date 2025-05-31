@@ -35,6 +35,10 @@ public class GridController : MonoBehaviour
     {
         terrain.Add(pos, tile);
     }
+    public bool TryGetTerrain(Vector3Int pos, out bool tile)
+    {
+        return terrain.TryGetValue(pos, out tile);
+    }
 
     private readonly Dictionary<Vector3Int, Character> characters = new();
     public void AddCharacter(Vector3Int pos, Character character)

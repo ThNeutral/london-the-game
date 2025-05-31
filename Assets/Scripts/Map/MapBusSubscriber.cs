@@ -168,17 +168,20 @@ public class MapBusSubscriber : MonoBehaviour
             case SelectionState.Attack:
                 {
                     if (!gridController.TryGetCharacter(startTile, out var characterActor)) return;
-
-                    var endAttackTile = visualizer.WorldToCell(hit.point);
-                    if (!gridController.TryGetCharacter(endAttackTile, out var characterTarget)) return;
-
-                    var actorTurnData = turnController.GetCharacterTurnData(characterActor);
-                    var targetTurnData = turnController.GetCharacterTurnData(characterTarget);
-
-                    var ability = characterActor.Abilities[0];
-                    if (ability.CanInteractWithAlly && (actorTurnData.side == targetTurnData.side)) characterTarget.ReceiveDamage(ability.Damage);
-                    if (ability.CanInteractWithEnemy && (actorTurnData.side != targetTurnData.side)) characterTarget.ReceiveDamage(ability.Damage);
                     
+                    var endAttackTile = visualizer.WorldToCell(hit.point);
+                    if (endAttackTile != endMoveTile && characterActor.Abilities.Count != 0)
+                    {
+                        if (!gridController.TryGetCharacter(endAttackTile, out var characterTarget)) return;
+
+                        var actorTurnData = turnController.GetCharacterTurnData(characterActor);
+                        var targetTurnData = turnController.GetCharacterTurnData(characterTarget);
+
+                        var ability = characterActor.Abilities[0];
+                        if (ability.CanInteractWithAlly && (actorTurnData.side == targetTurnData.side)) characterTarget.ReceiveDamage(ability.Damage);
+                        if (ability.CanInteractWithEnemy && (actorTurnData.side != targetTurnData.side)) characterTarget.ReceiveDamage(ability.Damage);
+                    }
+
                     var path = gridController.FindPath(startTile, endMoveTile, characterActor);
                     if (!gridController.TryMoveCharacter(path)) return;
                     turnController.Move(characterActor);

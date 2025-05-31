@@ -9,7 +9,10 @@ public class MapEffectVisualizer : MonoBehaviour
     private Tilemap tilemap;
 
     [SerializeField]
-    private Tile idleTile;
+    private Tile walkableTile;
+
+    [SerializeField]
+    private Tile nonWalkableTile;
 
     [SerializeField]
     private Tile attackTile;
@@ -20,7 +23,15 @@ public class MapEffectVisualizer : MonoBehaviour
     [SerializeField]
     private Tile selectTile;
 
+    [SerializeField]
+    private GridController gridController;
+
     private readonly HashSet<Vector3Int> affectedTiles = new();
+
+    private void Start()
+    {
+        gridController = GridController.Instance;
+    }
 
     public void AttackTiles(Vector3Int[] positions)
     {
@@ -66,6 +77,16 @@ public class MapEffectVisualizer : MonoBehaviour
 
     public void ResetTiles()
     {
-        ChangeTiles(affectedTiles.ToArray(), idleTile, true);
+        var openedTiles = new List<Vector3Int>();
+        var closedTiles = new List<Vector3Int>();
+        foreach (var pos in affectedTiles) 
+        {
+            Debug.Assert(gridController.TryGetTerrain(pos, out var tile));
+            if (tile) openedTiles.Add(pos);
+            else closedTiles.Add(pos);
+        }
+
+        ChangeTiles(openedTiles.ToArray(), walkableTile, true);
+        ChangeTiles(closedTiles.ToArray(), nonWalkableTile, true);
     }
 }

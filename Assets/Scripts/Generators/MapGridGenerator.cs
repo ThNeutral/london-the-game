@@ -7,6 +7,12 @@ public class MapGridGenerator : MonoBehaviour
     [SerializeField]
     private Tilemap tilemap;
 
+    [SerializeField]
+    private Tile walkableTile;
+
+    [SerializeField]
+    private Tile nonWalkableTile;
+
     private GridController gridController;
 
     void Start()
@@ -26,7 +32,19 @@ public class MapGridGenerator : MonoBehaviour
                 var cellPos = new Vector3Int(x, y, 0);
                 var tile = tilemap.GetTile(cellPos);
                 if (tile == null) continue;
-                gridController.AddTerrainTile(cellPos, true);
+
+                if (tile.name == walkableTile.name)
+                {
+                    gridController.AddTerrainTile(cellPos, true);
+                }
+                else if (tile.name == nonWalkableTile.name)
+                {
+                    gridController.AddTerrainTile(cellPos, false);
+                }
+                else
+                {
+                    Debug.LogError($"Found invalid tile on grid.");
+                }
             }
         }
     }
