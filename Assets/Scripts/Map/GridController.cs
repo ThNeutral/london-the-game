@@ -64,7 +64,7 @@ public class GridController : MonoBehaviour
         Debug.Assert(@event.ReadPayload(out character));
 
         var keysToRemove = characters.Where(kvp => kvp.Value == character).Select(kvp => kvp.Key).ToList();
-        Debug.Assert(keysToRemove.Count == 0);
+        Debug.Assert(keysToRemove.Count == 1);
 
         foreach (var key in keysToRemove)
         {
@@ -72,12 +72,12 @@ public class GridController : MonoBehaviour
         }
     }
 
-    public Vector3Int[] FindPath(Vector3Int start, Vector3Int end, Character character = null)
+    public Vector3Int[] FindPath(Vector3Int start, Vector3Int end, Character character = null, int maxPathLength = -1)
     {
-        if (character == null) return Pathfinder.FindPath(terrain, start, end);
+        if (character == null) return Pathfinder.FindPath(terrain, start, end, maxPathLength);
 
         var grid = GetWalkableTiles(character);
-        return Pathfinder.FindPath(grid, start, end);
+        return Pathfinder.FindPath(grid, start, end, maxPathLength);
     }
 
     private Dictionary<Vector3Int, bool> GetWalkableTiles(Character character)

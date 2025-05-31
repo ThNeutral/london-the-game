@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class Pathfinder
 {
-    public static Vector3Int[] FindPath(Dictionary<Vector3Int, bool> grid, Vector3Int start, Vector3Int end)
+    public static Vector3Int[] FindPath(Dictionary<Vector3Int, bool> grid, Vector3Int start, Vector3Int end, int maxPathLength = -1)
     {
         var openSet = new PriorityQueue<Vector3Int>();
         var cameFrom = new Dictionary<Vector3Int, Vector3Int>();
@@ -26,11 +26,18 @@ public static class Pathfinder
             var current = openSet.Dequeue();
 
             if (current == end)
-                return ReconstructPath(cameFrom, current).ToArray();
+            {
+                if (maxPathLength == -1 || gScore[end] <= maxPathLength)
+                    return ReconstructPath(cameFrom, current).ToArray();
+                else
+                    return null;
+            }
 
             foreach (var neighbor in GetNeighbors(current, grid))
             {
                 int tentativeGScore = gScore[current] + 1;
+
+                if (maxPathLength != -1 && tentativeGScore > maxPathLength) continue; 
 
                 if (tentativeGScore < gScore[neighbor])
                 {
@@ -44,12 +51,12 @@ public static class Pathfinder
             }
         }
 
-        return null; // No path found
+        return null;
     }
 
     private static int Heuristic(Vector3Int a, Vector3Int b)
     {
-        return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y) + Mathf.Abs(a.z - b.z); // Manhattan in 3D
+        return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y) + Mathf.Abs(a.z - b.z);
     }
 
     private static List<Vector3Int> GetNeighbors(Vector3Int current, Dictionary<Vector3Int, bool> grid)

@@ -101,8 +101,10 @@ public class MapBusSubscriber : MonoBehaviour
                     if (gridController.TryGetCharacter(startTile, out var character))
                     if (gridController.TryGetCharacter(newMouseAtTile, out var _)) return;
 
+                    var path = gridController.FindPath(startTile, newMouseAtTile, character, character.Stats.MoveDistance);
+                    if (path == null) return;
+
                     mouseAtTile = newMouseAtTile;
-                    var path = gridController.FindPath(startTile, mouseAtTile, character);
 
                     visualizer.ResetTiles();
                     visualizer.MoveTiles(path);
@@ -115,9 +117,11 @@ public class MapBusSubscriber : MonoBehaviour
                     if (gridController.TryGetCharacter(startTile, out var character))
                     if (gridController.TryGetCharacter(endMoveTile, out var _)) return;
 
+                    var movePath = gridController.FindPath(startTile, endMoveTile, character, character.Stats.MoveDistance);
+                    var attackPath = gridController.FindPath(endMoveTile, newMouseAtTile, null, character.Abilities[0].Distance);
+                    if (attackPath == null) return;
+
                     mouseAtTile = newMouseAtTile;
-                    var movePath = gridController.FindPath(startTile, endMoveTile, character);
-                    var attackPath = gridController.FindPath(endMoveTile, mouseAtTile);
 
                     visualizer.ResetTiles();
                     visualizer.MoveTiles(movePath);
@@ -163,7 +167,6 @@ public class MapBusSubscriber : MonoBehaviour
                 }
             case SelectionState.Attack:
                 {
-                    visualizer.ResetTiles();
                     if (!gridController.TryGetCharacter(startTile, out var characterActor)) return;
 
                     var endAttackTile = visualizer.WorldToCell(hit.point);
@@ -180,6 +183,7 @@ public class MapBusSubscriber : MonoBehaviour
                     if (!gridController.TryMoveCharacter(path)) return;
                     turnController.Move(characterActor);
 
+                    visualizer.ResetTiles();
                     selectionState = SelectionState.None;
                     break;
                 }

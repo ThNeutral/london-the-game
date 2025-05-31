@@ -1,5 +1,14 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
+
+[Serializable]
+public class CharacterPositionGenerationData
+{
+    public Vector2Int tile;
+    public GameObject prefab;
+    public Side side;
+}
 
 public class CharacterPositionsGenerator : MonoBehaviour
 {
@@ -7,10 +16,7 @@ public class CharacterPositionsGenerator : MonoBehaviour
     private MapEffectVisualizer visualizer;
 
     [SerializeField]
-    private GameObject allyPrefab;
-
-    [SerializeField]
-    private GameObject enemyPrefab;
+    private List<CharacterPositionGenerationData> generationDatas;
 
     private TurnController turnController;
     private GridController gridController;
@@ -25,24 +31,17 @@ public class CharacterPositionsGenerator : MonoBehaviour
 
     private void GenerateCharacterPositions()
     {
-        var allyTile = new Vector3Int(-2, -2);
-        var allyCharacter = Instantiate(allyPrefab).GetComponent<Character>();
+        foreach (var data in generationDatas)
+        {
+            var character = Instantiate(data.prefab).GetComponent<Character>();
 
-        var allyWorld = visualizer.CellToWorldCentered(allyTile);
-        allyWorld.y += 1f;
-        allyCharacter.transform.position = allyWorld;
+            var v3int = (Vector3Int)data.tile;
+            var world = visualizer.CellToWorldCentered(v3int);
+            world.y += 1f;
+            character.transform.position = world;
 
-        gridController.AddCharacter(allyTile, allyCharacter);
-        turnController.AddCharacter(allyCharacter, Side.Player, true);
-
-        var enemyTile = new Vector3Int(2, 2);
-        var enemyCharacter = Instantiate(enemyPrefab).GetComponent<Character>();
-
-        var enemyWorld = visualizer.CellToWorldCentered(enemyTile);
-        enemyWorld.y += 1f;
-        enemyCharacter.transform.position = enemyWorld;
-
-        gridController.AddCharacter(enemyTile, enemyCharacter);
-        turnController.AddCharacter(enemyCharacter, Side.AI, true);
+            gridController.AddCharacter(v3int, character);
+            turnController.AddCharacter(character, data.side, true);
+        }
     }
 }
