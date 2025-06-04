@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 
@@ -9,6 +10,7 @@ public class MapBusSubscriber : MonoBehaviour
     private enum SelectionState
     {
         None,
+        Ability,
         Move,
         Attack
     }
@@ -29,6 +31,8 @@ public class MapBusSubscriber : MonoBehaviour
     private Vector3Int mouseAtTile;
 
     private SelectionState selectionState = SelectionState.None;
+
+    private int selectedAbility;
 
     private bool clickUnlocked = false;
 
@@ -152,13 +156,36 @@ public class MapBusSubscriber : MonoBehaviour
                     visualizer.ResetTiles();
                     visualizer.SelectTiles(new Vector3Int[] { startTile });
 
-                    selectionState = SelectionState.Move;
+                    selectedAbility = 0;
+                    bus.Publish(MessageBus.EventType.RequestHideSelectAbilities, null);
+
+                    var requests = new List<AbilityUI.AbilityUIShowRequest>();
+                    for (int i = 0; i < character.Abilities.Count; i++)
+                    {
+                        var captured = i;
+                        requests.Add(new AbilityUI.AbilityUIShowRequest()
+                        {
+                            Label = $"A{captured + 1}",
+                            Callback = () =>
+                            {
+                                selectedAbility = captured;
+                                selectionState = SelectionState.Move;
+                                bus.Publish(MessageBus.EventType.RequestClearHighlightSelectAbilities, null);
+                                bus.Publish(MessageBus.EventType.RequestHighlightSelectAbilities, captured);
+                            }
+                        });
+                    }
+                    bus.Publish(MessageBus.EventType.RequestShowSelectAbilities, requests); 
+
+                    selectionState = SelectionState.Ability;
+                    break;
+                }
+            case SelectionState.Ability:
+                {
                     break;
                 }
             case SelectionState.Move:
                 {
-                    if (!gridController.TryGetCharacter(startTile, out var _)) return;
-
                     endMoveTile = visualizer.WorldToCell(hit.point);
                     if (gridController.TryGetCharacter(endMoveTile, out var _)) return;
 
@@ -177,7 +204,7 @@ public class MapBusSubscriber : MonoBehaviour
                         var actorTurnData = turnController.GetCharacterTurnData(characterActor);
                         var targetTurnData = turnController.GetCharacterTurnData(characterTarget);
 
-                        var ability = characterActor.Abilities[0];
+                        var ability = characterActor.Abilities[selectedAbility];
                         if (ability.CanInteractWithAlly && (actorTurnData.side == targetTurnData.side)) characterTarget.ReceiveDamage(ability.Damage);
                         if (ability.CanInteractWithEnemy && (actorTurnData.side != targetTurnData.side)) characterTarget.ReceiveDamage(ability.Damage);
                     }
@@ -186,6 +213,7 @@ public class MapBusSubscriber : MonoBehaviour
                     if (!gridController.TryMoveCharacter(path)) return;
                     turnController.Move(characterActor);
 
+                    bus.Publish(MessageBus.EventType.RequestHideSelectAbilities, null);
                     visualizer.ResetTiles();
                     selectionState = SelectionState.None;
                     break;

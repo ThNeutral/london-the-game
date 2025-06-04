@@ -64,8 +64,8 @@ public class GridController : MonoBehaviour
 
     private void OnCharacterDeath(MessageBus.Event @event)
     {
-        Character character = null;
-        Debug.Assert(@event.ReadPayload(out character));
+        var valid = @event.ReadPayload<Character>(out var character);
+        Debug.Assert(valid);
 
         var keysToRemove = characters.Where(kvp => kvp.Value == character).Select(kvp => kvp.Key).ToList();
         Debug.Assert(keysToRemove.Count == 1);

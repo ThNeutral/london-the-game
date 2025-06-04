@@ -81,7 +81,8 @@ public class MapEffectVisualizer : MonoBehaviour
         var closedTiles = new List<Vector3Int>();
         foreach (var pos in affectedTiles) 
         {
-            Debug.Assert(gridController.TryGetTerrain(pos, out var tile));
+            var valid = gridController.TryGetTerrain(pos, out var tile);
+            Debug.Assert(valid);
             if (tile) openedTiles.Add(pos);
             else closedTiles.Add(pos);
         }

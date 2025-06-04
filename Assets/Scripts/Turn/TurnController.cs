@@ -77,8 +77,8 @@ public class TurnController : MonoBehaviour
 
     private void OnCharacterDeath(MessageBus.Event @event)
     {
-        Character character = null;
-        Debug.Assert(@event.ReadPayload(out character));
+        var valid = @event.ReadPayload<Character>(out var character);
+        Debug.Assert(valid);
 
         sides.Remove(character);
         turns.Remove(character);
@@ -139,11 +139,11 @@ public class TurnController : MonoBehaviour
 
     public CharacterTurnData GetCharacterTurnData(Character character)
     {
-        Side side = Side.Player;
-        Debug.Assert(sides.TryGetValue(character, out side), "tried to access side of non-registered character");
+        var sideValid = sides.TryGetValue(character, out var side);
+        Debug.Assert(sideValid, "tried to access side of non-registered character");
 
-        bool turn = false;
-        Debug.Assert(turns.TryGetValue(character, out turn), "tried to access turn of non-registered character");
+        var turnValid = turns.TryGetValue(character, out var turn);
+        Debug.Assert(turnValid, "tried to access turn of non-registered character");
 
         return new(side, turn);
     }

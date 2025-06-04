@@ -20,6 +20,7 @@ public class Character : MonoBehaviour
 
     private void Start()
     {
+        abilities.Insert(0, new CharacterAbility());
         bus = MessageBus.Instance;
     }
 
