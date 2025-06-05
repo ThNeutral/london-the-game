@@ -101,6 +101,8 @@ public class AbilityUI : MonoBehaviour
             button.onClick.RemoveAllListeners();
             button.gameObject.SetActive(false);
         }
+
+        numberOfActiveButtons = 0;
     } 
     
     private void CheckNumberOfButtons(int targetSize)

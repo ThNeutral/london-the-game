@@ -41,6 +41,7 @@ public class MessageBus : MonoBehaviour
         RequestHighlightSelectAbilities,
         RequestClearHighlightSelectAbilities,
         RequestHideSelectAbilities,
+        RequestShowTurn
     }
 
     public class Event

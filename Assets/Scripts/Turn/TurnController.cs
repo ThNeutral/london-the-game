@@ -72,6 +72,7 @@ public class TurnController : MonoBehaviour
         bus = MessageBus.Instance;
         bus.Subscribe(MessageBus.EventType.CharacterDeath, OnCharacterDeath);
 
+        bus.Publish(MessageBus.EventType.RequestShowTurn, initialTurn.ToString());
         currentTurn = initialTurn;
     }
 
@@ -112,6 +113,8 @@ public class TurnController : MonoBehaviour
         }
 
         NextSide();
+
+        bus.Publish(MessageBus.EventType.RequestShowTurn, currentTurn.ToString());
     }
 
     private void NextSide()
